@@ -3,7 +3,6 @@ Type: Package
 Title: Combine Categories Using Greenacre's Method
 Version: 0.0.0.9000
 Authors@R: person("Jeff", "Jetton", , "jeff.jetton@gmail.com", c("aut", "cre")),
-################################################################################
 Description: Implements a method of iteratively collapsing the rows of a
     contingency table, two at a time, by selecting the pair of categories whose
     combination results in a new table with the smallest loss of chi-squared.

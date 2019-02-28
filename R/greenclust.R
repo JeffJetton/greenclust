@@ -1,17 +1,29 @@
+# You can learn more about package authoring with RStudio at:
+#
+#   http://r-pkgs.had.co.nz/
+#
+# Some useful keyboard shortcuts for package authoring:
+#
+#   Build and Reload Package:  'Cmd + Shift + B'
+#   Check Package:             'Cmd + Shift + E'
+#   Test Package:              'Cmd + Shift + T'
+
+
 ################################################################################
 
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
-    
+
     # Assumes a numeric matrix or matrix-like object
-    
+
     #TODO: Clean up verbose output: Have it display original row name
-    
+    #TODO: Move combine rows to an external "dot" function
+
     # Check for valid arguments
     if (is.na(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
         stop("x must be a non-null matrix or data frame")
     if (!is.numeric(x))
         stop("x must be numeric")
-    if (any(x < 0) || anyNA(x)) 
+    if (any(x < 0) || anyNA(x))
         stop("all elements must be nonnegative and finite")
     if (nrow(x) < 3)
         stop("x should have at least 3 rows")
@@ -22,7 +34,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     if(sum(apply(x, 2, sum)==0) > 0)
         stop("all column totals must be greater than zero")
 
-    
+
     # Nested function for collapsing categories
     combine.rows <- function(m, r1, r2, combo.name) {
         # Returns a matrix that sums rows r1 and r2 of matrix m
@@ -55,7 +67,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     # Main clustering loop. Iterates over each clustering decision step.
     for (cluster.number in 1:(n-1)) {
-        
+
         # Figure out how many row combinations we'll try out this iteration
         trials <- choose(nrow(x), 2)
         # Track the best chi-square, as well as the p-value and rows combined
@@ -96,14 +108,14 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         heights <- c(heights, (initial.chi - best.chi)/initial.chi)
         p.values <- c(p.values, best.p)
         tie <- c(tie, tie.flag)
-        
+
         # Change our matrix to the winning combined row matrix
         if (best.trial==trials) {
             x <- trial.x
         } else {
             x <- combine.rows(x, best.i, best.j, cluster.number)
         }
-        
+
         if (verbose && cluster.number < (n - 1)) {
             cat(paste("Step:", cluster.number,"\n"))
             print(x)
@@ -121,7 +133,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     heights[length(heights)] <- 1
     # Remove the height names given by the chisq.test function
     names(heights) <- NULL
-    
+
     # Final p.value is not meaningful
     p.values <- p.values[-length(p.values)]
 
@@ -135,23 +147,27 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
                          p.values=p.values,
                          tie=tie),
                     class=c("hclust", "greenclust"))
-    
+
     # Use dendrogram object to help create the order vector
     gc$order <- order.dendrogram(as.dendrogram(gc))
-    
+
     return(gc)
 }
 
 
-greencut <- function(g, add.r2=TRUE) {
-    
+greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
+
+
     # TODO: support getting passed k or h
     #       use either as value for cutree, but still return r-sq
     # If h or k passed and add.r2 = FALSE, basically functions as
     # cutree pass-through
-    # TODO: Check data types
-    
-    
+
+    # Check validity specific to greenclust objects
+    # (hclust validity will be checked by the cutree function)
+    if (!inherits(g, "greenclust") || is.null(g$p.values))
+        stop("not a valid 'greenclust' object")
+
     # Performs a cutree, automatically calculating the
     # optimal number of groups based on the cluster
     # with the chi.sq test having the lowest p.value
@@ -161,13 +177,19 @@ greencut <- function(g, add.r2=TRUE) {
     min.i <- min.indices[length(min.indices)]
     # Convert index to cluster count
     c <- length(g$order) - min.i
-    
-    # Perform cut and calculate r-squared of result
+
+    # Perform cut
     groups <- cutree(g, c)
-    if (add.r2) {
+
+    # Calculate r-squared
+    if (r.squared) {
         attr(groups, "r.squared") <- 1 - g$height[min.i]
     }
-    
+
+    # Add p.value
+    if (p.value) {
+        attr(groups, "p.value") <- g$p.values[min.i]
+    }
     return(groups)
 }
 
@@ -176,10 +198,10 @@ greencut <- function(g, add.r2=TRUE) {
 greenplot <- function(g, type="b", bg="gray75", pch=21, cex=1,
                       optim.col="red", pos=2, xlab="r-squared", ylab=NULL,
                       main="P-Value vs. R-Squared for Num. Clusters", ...) {
-    
+
     # TODO: Check valid arguments (for type, etc.)
 
-    
+
     # Add a small adjustment if any p-values are zero
     if (sum(g$p.values==0) > 1) {
         log.p <- log(g$p.values + 1e-15)
@@ -192,17 +214,17 @@ greenplot <- function(g, type="b", bg="gray75", pch=21, cex=1,
             ylab <- "log of p-value"
         }
     }
-    
+
     # Get r-squared from height vector
     r2 <- 1 - g$height
     # There's always one more height than p-value (the
     # final "1" height at the end). Remove it.
     r2 <- r2[-length(r2)]
-    
+
     clust.num <- length(g$height):2
     optim.clust <- max(greencut(g))
     bg <- ifelse(clust.num==optim.clust, optim.col, bg)
-    
+
     if (type=="b" || type=="l") {
         col <- ifelse(type=="b", bg, "black")
         plot(r2, log.p, type="l", col=col,

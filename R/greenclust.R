@@ -11,9 +11,41 @@
 
 ################################################################################
 
-greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
-    # Assumes a numeric matrix or matrix-like object
+#' Row Clustering Using Greenacre's Method
+#'
+#' Iteratively collapses the rows of a table (typically a contingency table)
+#' by selecting the pair of rows each time whose combination results in a
+#' new table with the smallest loss of chi-squared.
+#'
+#' @param x a numeric matrix or data frame
+#' @param correct a logical indicating whether to apply a continuity
+#'   correction if and when the clustered table reaches a 2x2 dimension.
+#' @param verbose if TRUE, prints the clustered table along with r-squared and
+#'   p-value at each step
+#' @return An object of class \code{greenclust} which is compatible with most
+#'   most \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
+#'   \code{\link{rect.hclust}()}
+#' @examples
+#' # Combine Titanic passenger attributes into a single category
+#' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
+#' # Remove rows with all zeros
+#' tab <- tab[apply(tab, 1, sum) > 0, ]
+#'
+#' gc <- greenclust(tab)
+#' plot(gc)
+#'
+#' # Plot r-squared and p-values for each potential cut point
+#' greenplot(gc)
+#'
+#' # Get clusters at suggested cut point
+#' clusters <- greencut(gc)
+#' rect.hclust(gc, max(clusters))
+#'
+#' @export
+#' @importFrom stats chisq.test as.dendrogram order.dendrogram
+#' @importFrom utils flush.console
+greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     #TODO: Clean up verbose output: Have it display original row name
     #TODO: Move combine rows to an external "dot" function
@@ -155,6 +187,8 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 }
 
 
+
+#' @export
 greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
 
 
@@ -179,7 +213,7 @@ greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
     c <- length(g$order) - min.i
 
     # Perform cut
-    groups <- cutree(g, c)
+    groups <- stats::cutree(g, c)
 
     # Calculate r-squared
     if (r.squared) {
@@ -195,6 +229,7 @@ greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
 
 
 
+#' @export
 greenplot <- function(g, type="b", bg="gray75", pch=21, cex=1,
                       optim.col="red", pos=2, xlab="r-squared", ylab=NULL,
                       main="P-Value vs. R-Squared for Num. Clusters", ...) {
@@ -227,20 +262,21 @@ greenplot <- function(g, type="b", bg="gray75", pch=21, cex=1,
 
     if (type=="b" || type=="l") {
         col <- ifelse(type=="b", bg, "black")
-        plot(r2, log.p, type="l", col=col,
-             xlab=xlab, ylab=ylab,
-             main=main, ...)
+        graphics::plot(r2, log.p, type="l", col=col,
+                       xlab=xlab, ylab=ylab,
+                       main=main, ...)
     }
     if (type=="b" || type=="p") {
-        points(r2, log.p, bg=bg, pch=pch, cex=cex, ...)
+        graphics::points(r2, log.p, bg=bg, pch=pch, cex=cex, ...)
     }
     if (type=="p") {
-        plot(r2, log.p, bg=bg, pch=pch, cex=cex,
-             xlab=xlab, ylab=ylab, main=main, ...)
+        graphics::plot(r2, log.p, bg=bg, pch=pch, cex=cex,
+                       xlab=xlab, ylab=ylab, main=main, ...)
     }
 
-    text(r2, log.p, clust.num, pos=pos, cex=cex*0.8,
-         col=ifelse(clust.num==optim.clust, optim.col, 1), ...)
+    graphics::text(r2, log.p, clust.num, pos=pos, cex=cex*0.8,
+                   col=ifelse(clust.num==optim.clust, optim.col, 1),
+                   ...)
 }
 
 

@@ -31,14 +31,17 @@ tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
 # Remove rows with all zeros
 tab <- tab[apply(tab, 1, sum) > 0, ]
 
-gc <- greenclust(tab)
-plot(gc)
+# Perform clustering on contingency table
+grc <- greenclust(tab)
 
 # Plot r-squared and p-values for each potential cut point
-greenplot(gc)
+greenplot(grc)
 
 # Get clusters at suggested cut point
-clusters <- greencut(gc)
-rect.hclust(gc, max(clusters))
+clusters <- greencut(grc)
+
+# Plot dendrogram with clusters marked
+plot(grc)
+rect.hclust(grc, max(clusters))
 
 }

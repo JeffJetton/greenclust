@@ -32,23 +32,28 @@
 #' # Remove rows with all zeros
 #' tab <- tab[apply(tab, 1, sum) > 0, ]
 #'
-#' gc <- greenclust(tab)
-#' plot(gc)
+#' # Perform clustering on contingency table
+#' grc <- greenclust(tab)
 #'
 #' # Plot r-squared and p-values for each potential cut point
-#' greenplot(gc)
+#' greenplot(grc)
 #'
 #' # Get clusters at suggested cut point
-#' clusters <- greencut(gc)
-#' rect.hclust(gc, max(clusters))
+#' clusters <- greencut(grc)
+#'
+#' # Plot dendrogram with clusters marked
+#' plot(grc)
+#' rect.hclust(grc, max(clusters))
 #'
 #' @export
 #' @importFrom stats chisq.test as.dendrogram order.dendrogram
 #' @importFrom utils flush.console
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
-    #TODO: Clean up verbose output: Have it display original row name
+    #TODO: Clean up verbose output: Have it display original row name?
+    #           And cluster combos? Or maybe just say "x combined with y"?
     #TODO: Move combine rows to an external "dot" function
+    #TODO: Override the summary() function to create SAS-like table?
 
     # Check for valid arguments
     if (is.na(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
@@ -149,8 +154,19 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         }
 
         if (verbose && cluster.number < (n - 1)) {
-            cat(paste("Step:", cluster.number,"\n"))
-            print(x)
+            # Translate negative row names to original text
+            temp <- x
+            rnames <- rownames(temp)
+            rnames[rnames < 0] <- s[-as.numeric(rnames[rnames < 0])]
+            rownames(temp) <- rnames
+            # Display step information
+            cat(paste("Step:", cluster.number))
+            if (tie.flag) {
+                cat(" (tie)\n")
+            } else {
+                cat("\n")
+            }
+            print(temp)
             cat(paste("\nChi-squared:",
                       round(best.chi, 2), "\n"))
             cat(paste("p-value:", signif(best.p, 4), "\n"))
@@ -170,20 +186,20 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     p.values <- p.values[-length(p.values)]
 
     # Pack everything up (except the order vector)
-    gc <- structure(list(merge=merge.matrix,
-                         height=heights,
-                         order=vector(),
-                         labels=saved.names,
-                         call=match.call(),
-                         dist.method="chi-squared",
-                         p.values=p.values,
-                         tie=tie),
-                    class=c("hclust", "greenclust"))
+    grc <- structure(list(merge=merge.matrix,
+                          height=heights,
+                          order=vector(),
+                          labels=saved.names,
+                          call=match.call(),
+                          dist.method="chi-squared",
+                          p.values=p.values,
+                          tie=tie),
+                     class=c("hclust", "greenclust"))
 
     # Use dendrogram object to help create the order vector
-    gc$order <- order.dendrogram(as.dendrogram(gc))
+    grc$order <- order.dendrogram(as.dendrogram(grc))
 
-    return(gc)
+    return(grc)
 }
 
 

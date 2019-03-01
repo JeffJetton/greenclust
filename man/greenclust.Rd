@@ -31,14 +31,14 @@ tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
 # Remove rows with all zeros
 tab <- tab[apply(tab, 1, sum) > 0, ]
 
-# Perform clustering and plot
 gc <- greenclust(tab)
 plot(gc)
 
-# Get suggested clusters and add to plot
+# Plot r-squared and p-values for each potential cut point
+greenplot(gc)
+
+# Get clusters at suggested cut point
 clusters <- greencut(gc)
 rect.hclust(gc, max(clusters))
 
-# Plot r-squared and p-values for each cut point
-greenplot(gc)
 }

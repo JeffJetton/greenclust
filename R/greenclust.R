@@ -50,10 +50,7 @@
 #' @importFrom utils flush.console
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
-    #TODO: Clean up verbose output: Have it display original row name?
-    #           And cluster combos? Or maybe just say "x combined with y"?
     #TODO: Move combine rows to an external "dot" function
-    #TODO: Override the summary() function to create SAS-like table?
 
     # Check for valid arguments
     if (is.na(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
@@ -156,10 +153,13 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         }
 
         if (verbose && cluster.number < (n - 1)) {
-            # Translate negative row names to original text
+            # Translate negative row names to original text and append
+            # non-negative row names with "Cluster "
             temp <- x
             rnames <- rownames(temp)
             rnames[rnames < 0] <- saved.names[-as.numeric(rnames[rnames < 0])]
+            rnames[rownames(temp) > 0] <-
+                paste("Cluster", rnames[rownames(temp) > 0])
             rownames(temp) <- rnames
             # Display step information
             cat(paste("Step:", cluster.number))

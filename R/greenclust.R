@@ -24,7 +24,7 @@
 #' @param verbose if TRUE, prints the clustered table along with r-squared and
 #'   p-value at each step
 #' @return An object of class \code{greenclust} which is compatible with most
-#'   most \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
+#'   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
 #'   \code{\link{rect.hclust}()}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
@@ -92,11 +92,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     # Remember chi-squared for the initial, un-clustered matrix
     suppressWarnings(initial.chi <- chisq.test(x, correct=correct)$statistic)
-    # Replace row names with "negative" row numbers, to help us build the merge matrix
+    # Replace row names with negative row numbers, for building merge matrix
     saved.names <- rownames(x)
     n <- nrow(x)
     rownames(x) <- -(1:n)
-    # Initialize the merge matrix and the heights/p.value/tie vectors as empty vectors
+    # Initialize merge matrix and object vectors
     merge.matrix <- vector()
     heights <- vector()
     p.values <- vector()
@@ -123,7 +123,8 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
                 j <- i + offset
                 trial.x <- combine.rows(x, i, j, cluster.number)
                 # Calculate new chi-sq test results
-                new.chi <- suppressWarnings(chisq.test(trial.x, correct=correct))
+                new.chi <- suppressWarnings(chisq.test(trial.x,
+                                                       correct=correct))
                 # Best so far?
                 if (new.chi$statistic > best.chi) {
                     best.chi <- new.chi$statistic
@@ -141,7 +142,8 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         }
 
         # Add info on winning clustering to our tracking variables
-        merge.matrix <- rbind(merge.matrix, as.numeric(rownames(x)[c(best.i, best.j)]))
+        merge.matrix <- rbind(merge.matrix,
+                              as.numeric(rownames(x)[c(best.i, best.j)]))
         heights <- c(heights, (initial.chi - best.chi)/initial.chi)
         p.values <- c(p.values, best.p)
         tie <- c(tie, tie.flag)
@@ -157,7 +159,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
             # Translate negative row names to original text
             temp <- x
             rnames <- rownames(temp)
-            rnames[rnames < 0] <- s[-as.numeric(rnames[rnames < 0])]
+            rnames[rnames < 0] <- saved.names[-as.numeric(rnames[rnames < 0])]
             rownames(temp) <- rnames
             # Display step information
             cat(paste("Step:", cluster.number))
@@ -244,14 +246,54 @@ greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
 }
 
 
-
+#' Plot Statistics for a Greenclust Object
+#'
+#' Displays a connected scatterplot showing the r-squared values (x-axis) and
+#' p-values (y-axis) at each clustering step of a \code{\link{greenclust}}
+#' object. Points are labeled with their cutpoints, i.e., the number of
+#' groups/clusters found at each step. The point with the lowest p-value
+#' (typically the optimal cutpoint) is highlighted.
+#' @param g an object of the type produced by \code{\link{greenclust}}
+#' @param type 1-character string giving the type of plot desired: "p" for
+#'   points, "l" for lines, and "b" (the default) for both points and lines.
+#' @param bg a vector of background colors for open plot symbols. Also used
+#'   for the line color if type is "b".
+#' @param pch a vector of plotting characters or symbols: see
+#'   \code{\link{points}}
+#' @param cex a numerical vector giving the amount by which plotting
+#'   characters and symbols should be scaled relative to the default. For
+#'   this plot, the numeric labels on each point are always scaled to
+#'   0.80 of this value.
+#' @param optim.col color to use for highlighting the "optimal" cutpoint.
+#' @param pos specifies the position of labels relative to their points:
+#'   1 = below, 2 = left, 3 = above, and 4 = right.
+#' @param main an overall title for the plot.
+#' @param xlab a title for the x axis.
+#' @param ylab a title for the y axis.
+#' @param ... additional arguments to be passed to the plotting methods.
+#' @examples
+#' # Combine Titanic passenger attributes into a single category
+#' # and create a contingency table for the non-zero levels
+#' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
+#' tab <- tab[apply(tab, 1, sum) > 0, ]
+#'
+#' grc <- greenclust(tab)
+#' greenplot(grc)
+#'
+#'
+#' # Plot using custom graphical parameters
+#' greenplot(grc, type="p", bg="lightblue", optim.col="darkorange",
+#'           pos=3, bty="n", cex.main=2, col.main="blue")
 #' @export
-greenplot <- function(g, type="b", bg="gray75", pch=21, cex=1,
-                      optim.col="red", pos=2, xlab="r-squared", ylab=NULL,
-                      main="P-Value vs. R-Squared for Num. Clusters", ...) {
+greenplot <- function(g, type="b", bg="gray75", pch=21,
+                      cex=1, optim.col="red", pos=2,
+                      main="P-Value vs. R-Squared for Num. Clusters",
+                      xlab="r-squared", ylab=NULL, ...) {
 
-    # TODO: Check valid arguments (for type, etc.)
-
+    if (is.null(g$p.values))
+        stop("g is missing a 'p.values' vector")
+    if (is.null(g$height))
+        stop("g is missing a 'height' vector")
 
     # Add a small adjustment if any p-values are zero
     if (sum(g$p.values==0) > 1) {

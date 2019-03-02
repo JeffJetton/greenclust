@@ -17,7 +17,7 @@ p-value at each step}
 }
 \value{
 An object of class \code{greenclust} which is compatible with most
-  most \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
+  \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
   \code{\link{rect.hclust}()}
 }
 \description{

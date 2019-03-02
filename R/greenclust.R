@@ -25,7 +25,7 @@
 #'   p-value at each step
 #' @return An object of class \code{greenclust} which is compatible with most
 #'   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
-#'   \code{\link{rect.hclust}()}
+#'   \code{\link{rect.hclust}()}. TODO: explain height, p.values, and ties
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
@@ -206,42 +206,49 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
 
 
+
+# Performs a cutree, automatically calculating the
+# optimal number of groups based on the cluster
+# with the chi.sq test having the lowest p.value
+
 #' @export
-greencut <- function(g, k=NULL, h=NULL, r.squared=TRUE, p.value=TRUE) {
+greencut <- function(g, k=NULL, h=NULL) {
 
-
-    # TODO: support getting passed k or h
-    #       use either as value for cutree, but still return r-sq
-    # If h or k passed and add.r2 = FALSE, basically functions as
-    # cutree pass-through
-
-    # Check validity specific to greenclust objects
-    # (hclust validity will be checked by the cutree function)
+    # Check validity specific to greenclust objects. (The cutree function
+    # used later will check for hclust validity.)
     if (!inherits(g, "greenclust") || is.null(g$p.values))
         stop("not a valid 'greenclust' object")
 
-    # Performs a cutree, automatically calculating the
-    # optimal number of groups based on the cluster
-    # with the chi.sq test having the lowest p.value
-    min.indices <- which(g$p.values==min(g$p.values))
-    # In case of ties, go with the highest index
-    # (smallest number of clusters)
-    min.i <- min.indices[length(min.indices)]
-    # Convert index to cluster count
-    c <- length(g$order) - min.i
-
-    # Perform cut
-    groups <- stats::cutree(g, c)
-
-    # Calculate r-squared
-    if (r.squared) {
-        attr(groups, "r.squared") <- 1 - g$height[min.i]
+    # Determine cutpoint and group membership vector
+    if (is.null(k)) {
+        if (is.null(h)) {
+            # k and h are both null: determine cutpoint from p-values
+            min.indices <- which(g$p.values==min(g$p.values))
+            # In case of ties, go with the highest index
+            # (smallest number of clusters/groups)
+            clust.index <- min.indices[length(min.indices)]
+            # Convert index to number of clusters
+            k <- length(g$height) - clust.index
+            # Perform cut at k
+            groups <- stats::cutree(g, k)
+        } else {
+            # k is null but h is not: cut at specified height
+            groups <- stats::cutree(g, h=h)
+            # Convert number of clusters to index
+            k <- max(groups)
+            clust.index <- length(g$height) - k
+        }
+    } else {
+        # k is not null: cut at specified number of groups
+        groups <- stats::cutree(g, k)
+        # Convert number of clusters to index
+        clust.index <- length(g$height) - k
     }
 
-    # Add p.value
-    if (p.value) {
-        attr(groups, "p.value") <- g$p.values[min.i]
-    }
+    # Add attributes for r-squared and p-value at cutpoint
+    attr(groups, "r.squared") <- 1 - g$height[clust.index]
+    attr(groups, "p.value") <- g$p.values[clust.index]
+
     return(groups)
 }
 

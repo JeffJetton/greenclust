@@ -26,6 +26,9 @@
 #' @return An object of class \code{greenclust} which is compatible with most
 #'   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
 #'   \code{\link{rect.hclust}()}. TODO: explain height, p.values, and ties
+#' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
+#'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
+#'   \url{https://doi.org/10.1007/BF01901670}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
@@ -315,6 +318,9 @@ greencut <- function(g, k=NULL, h=NULL) {
 #' @param xlab a title for the x axis.
 #' @param ylab a title for the y axis.
 #' @param ... additional arguments to be passed to the plotting methods.
+#' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
+#'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
+#'   \url{https://doi.org/10.1007/BF01901670}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' # and create a contingency table for the non-zero levels

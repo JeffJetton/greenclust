@@ -268,7 +268,7 @@ greencut <- function(g, k=NULL, h=NULL) {
             # (smallest number of clusters/groups)
             clust.index <- min.indices[length(min.indices)]
             # Convert index to number of clusters
-            k <- length(g$height) - clust.index
+            k <- length(g$p.values) - clust.index + 2
             # Perform cut at k
             groups <- stats::cutree(g, k)
         } else {
@@ -276,13 +276,13 @@ greencut <- function(g, k=NULL, h=NULL) {
             groups <- stats::cutree(g, h=h)
             # Convert number of clusters to index
             k <- max(groups)
-            clust.index <- length(g$height) - k
+            clust.index <- length(g$p.values) - k + 2
         }
     } else {
         # k is not null: cut at specified number of groups
         groups <- stats::cutree(g, k)
         # Convert number of clusters to index
-        clust.index <- length(g$height) - k
+        clust.index <- length(g$height) - k + 2
     }
 
     # Add attributes for r-squared and p-value at cutpoint

@@ -51,6 +51,7 @@
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     #TODO: Move combine rows to an external "dot" function
+    #TODO: Add references section here and in greenplot
 
     # Check for valid arguments
     if (is.na(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
@@ -207,10 +208,46 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
 
 
-# Performs a cutree, automatically calculating the
-# optimal number of groups based on the cluster
-# with the chi.sq test having the lowest p.value
 
+#' Cut a Greenclust Tree into Optimal Groups
+#'
+#' Cuts a \code{\link{greenclust}} tree at an automatically-determined number
+#' of groups.
+#'
+#' The cut point is calculated by finding the number of groups/clusters that
+#' results in a collapsed contingency table with the most-significant (lowest
+#' p-value) chi-squared test. If there are ties, the smallest number of
+#' groups wins.
+#'
+#' If a certain number of groups is required or a specific r-squared
+#' (1 - height) threshold is targeted, values for either \code{k} or \code{h}
+#' may be provided. (Although the regular \code{\link{cutree}} function could
+#' also be used instead in these circumstances, it may still be useful to have
+#' the additional attributes that \code{greencut()} provides.)
+#'
+#' As with \code{cutree()}, \code{k} overrides \code{h} if both are given.
+#'
+#' @param g a tree as producted by \code{\link{greenclust}}
+#' @param k an integer scalar with the desired number of groups
+#' @param h numeric scalar with the desired height where the tree should be cut
+#' @return \code{greencut} returns a vector of group memberships, with the
+#'   resulting r-squared value and p-value as object attributes,
+#'   accessable via \code{\link{attr}}.
+#' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
+#'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
+#'   \url{https://doi.org/10.1007/BF01901670}
+#' @examples
+#' # Combine Titanic passenger attributes into a single category
+#' # and create a contingency table for the non-zero levels
+#' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
+#' tab <- tab[apply(tab, 1, sum) > 0, ]
+#'
+#' grc <- greenclust(tab)
+#' greencut(grc)
+#'
+#' plot(grc)
+#' rect.hclust(grc, max(greencut(grc)),
+#'             border=unique(greencut(grc))+1)
 #' @export
 greencut <- function(g, k=NULL, h=NULL) {
 

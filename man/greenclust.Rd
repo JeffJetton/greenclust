@@ -18,7 +18,7 @@ p-value at each step}
 \value{
 An object of class \code{greenclust} which is compatible with most
   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
-  \code{\link{rect.hclust}()}
+  \code{\link{rect.hclust}()}. TODO: explain height, p.values, and ties
 }
 \description{
 Iteratively collapses the rows of a table (typically a contingency table)

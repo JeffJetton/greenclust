@@ -13,13 +13,12 @@
 
 # "Hidden" functions used by greenclust()
 
+# Return a new matrix that sums rows r1 and r2 of matrix m
+# combo.name is the name to give the newly-combined row
+# For speed, no checks are done. Ensure that:
+#    * Index r1 is less than r2
+#    * Both are valid rows in range of m
 .combine.rows <- function(m, r1, r2, combo.name) {
-    # Returns a matrix that sums rows r1 and r2 of matrix m
-    # combo.name is the name to give the newly-combined row
-    # For speed, no checks are done. Ensure that:
-    #    * Index r1 is less than r2
-    #    * Both are valid rows in range of m
-
     # Copy matrix without row r1, preserving dimensions
     # (i.e., not letting it become a vector)
     new.m <- m[-r1, , drop=FALSE]
@@ -30,6 +29,39 @@
     return(new.m)
 }
 
+# Display information about a particular clustering step
+# Called by greenclust() when verbose==TRUE
+#
+#           x: final matrix at this step
+#  orig.names: text to display when row name < 0
+#           n: cluster step number
+#    tie.flag: were there tied chi-squares at this step?
+#       chisq: chi-squared statistic of this step's matrix
+#           p: p-value of above chi-squared test
+# initial.chi: chi-squared of original (unclustered) matrix,
+#              used to calculate r-squared
+#
+.print.step <- function(x, orig.names, n, tie.flag, chisq, p, initial.chi) {
+    # Translate negative row names to original text and append
+    # non-negative row names with "Cluster "
+    temp <- x
+    rnames <- rownames(temp)
+    rnames[rnames < 0] <- orig.names[-as.numeric(rnames[rnames < 0])]
+    rnames[rownames(temp) > 0] <- paste("Cluster", rnames[rownames(temp) > 0])
+    rownames(temp) <- rnames
+    # Display step information
+    cat(paste("Step:", n))
+    if (tie.flag) {
+        cat(" (tie)\n")
+    } else {
+        cat("\n")
+    }
+    print(temp)
+    cat(paste("\nChi-squared:", round(chisq, 2), "\n"))
+    cat(paste("p-value:", signif(p, 4), "\n"))
+    cat(paste("R-squared:", round(chisq/initial.chi, 4), "\n\n\n"))
+    utils::flush.console()
+}
 
 
 #' Row Clustering Using Greenacre's Method
@@ -70,10 +102,8 @@
 #'
 #' @export
 #' @importFrom stats chisq.test as.dendrogram order.dendrogram
-#' @importFrom utils flush.console
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
-    #TODO: Move combine rows to an external "dot" function
     #TODO: Add references section here and in greenplot
 
     # Check for valid arguments
@@ -91,7 +121,6 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         stop("all row totals must be greater than zero")
     if(sum(apply(x, 2, sum)==0) > 0)
         stop("all column totals must be greater than zero")
-
 
     # Remember chi-squared for the initial, un-clustered matrix
     suppressWarnings(initial.chi <- chisq.test(x, correct=correct)$statistic)
@@ -159,33 +188,12 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         }
 
         if (verbose && cluster.number < (n - 1)) {
-            # Translate negative row names to original text and append
-            # non-negative row names with "Cluster "
-            temp <- x
-            rnames <- rownames(temp)
-            rnames[rnames < 0] <- saved.names[-as.numeric(rnames[rnames < 0])]
-            rnames[rownames(temp) > 0] <-
-                paste("Cluster", rnames[rownames(temp) > 0])
-            rownames(temp) <- rnames
-            # Display step information
-            cat(paste("Step:", cluster.number))
-            if (tie.flag) {
-                cat(" (tie)\n")
-            } else {
-                cat("\n")
-            }
-            print(temp)
-            cat(paste("\nChi-squared:",
-                      round(best.chi, 2), "\n"))
-            cat(paste("p-value:", signif(best.p, 4), "\n"))
-            cat(paste("R-squared:",
-                      round(best.chi/initial.chi, 4),
-                      "\n\n\n"))
-            flush.console()
+            .print.step(x, saved.names, cluster.number, tie.flag,
+                        best.chi, best.p, initial.chi)
         }
     }
 
-    # Final height should always be 1
+    # Final height should always be 1 (for plotting)
     heights[length(heights)] <- 1
     # Remove the height names given by the chisq.test function
     names(heights) <- NULL

@@ -60,3 +60,8 @@ greenplot(grc)
 greenplot(grc, type="p", bg="lightblue", optim.col="darkorange",
           pos=3, bty="n", cex.main=2, col.main="blue")
 }
+\references{
+Greenacre, M.J. (1988) "Clustering the Rows and Columns of
+  a Contingency Table," \emph{Journal of Classification 5}, 39-51.
+  \url{https://doi.org/10.1007/BF01901670}
+}

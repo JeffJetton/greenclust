@@ -34,7 +34,7 @@ may be provided. (Although the regular \code{\link{cutree}} function could
 also be used instead in these circumstances, it may still be useful to have
 the additional attributes that \code{greencut()} provides.)
 
-As with \code{\link{cutree}}, \code{k} overrides \code{h} if both are given.
+As with \code{cutree()}, \code{k} overrides \code{h} if both are given.
 }
 \examples{
 # Combine Titanic passenger attributes into a single category

@@ -11,6 +11,26 @@
 
 ################################################################################
 
+# "Hidden" functions used by greenclust()
+
+.combine.rows <- function(m, r1, r2, combo.name) {
+    # Returns a matrix that sums rows r1 and r2 of matrix m
+    # combo.name is the name to give the newly-combined row
+    # For speed, no checks are done. Ensure that:
+    #    * Index r1 is less than r2
+    #    * Both are valid rows in range of m
+
+    # Copy matrix without row r1, preserving dimensions
+    # (i.e., not letting it become a vector)
+    new.m <- m[-r1, , drop=FALSE]
+    # Replace row r2 (which is now at row r2-1) with combination
+    combrow <- r2 - 1
+    new.m[combrow, ] <- apply(m[c(r1, r2), ], 2, sum)
+    row.names(new.m)[combrow] <- combo.name
+    return(new.m)
+}
+
+
 
 #' Row Clustering Using Greenacre's Method
 #'
@@ -73,24 +93,6 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         stop("all column totals must be greater than zero")
 
 
-    # Nested function for collapsing categories
-    combine.rows <- function(m, r1, r2, combo.name) {
-        # Returns a matrix that sums rows r1 and r2 of matrix m
-        # combo.name is the name to give the newly-combined row
-        # For speed, no checks are done. Ensure that:
-        #    * Index r1 is less than r2
-        #    * Both are valid rows in range of m
-
-        # Copy matrix without row r1, preserving dimensions
-        # (i.e., not letting it become a vector)
-        new.m <- m[-r1, , drop=FALSE]
-        # Replace row r2 (which is now at row r2-1) with combination
-        combrow <- r2 - 1
-        new.m[combrow, ] <- apply(m[c(r1, r2), ], 2, sum)
-        row.names(new.m)[combrow] <- combo.name
-        return(new.m)
-    }
-
     # Remember chi-squared for the initial, un-clustered matrix
     suppressWarnings(initial.chi <- chisq.test(x, correct=correct)$statistic)
     # Replace row names with negative row numbers, for building merge matrix
@@ -122,7 +124,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
             # Combine row i with every row higher than i...
             for (offset in 1:(nrow(x)-i)) {
                 j <- i + offset
-                trial.x <- combine.rows(x, i, j, cluster.number)
+                trial.x <- .combine.rows(x, i, j, cluster.number)
                 # Calculate new chi-sq test results
                 new.chi <- suppressWarnings(chisq.test(trial.x,
                                                        correct=correct))
@@ -153,7 +155,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         if (best.trial==trials) {
             x <- trial.x
         } else {
-            x <- combine.rows(x, best.i, best.j, cluster.number)
+            x <- .combine.rows(x, best.i, best.j, cluster.number)
         }
 
         if (verbose && cluster.number < (n - 1)) {

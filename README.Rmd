@@ -1,0 +1,101 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# greenclust
+
+## Overview
+
+The `greenclust` package implements a method of grouping/clustering the categories of a contingency table in a way that preserves as much of the original variance as possible. It is well-suited for reducing the number of levels of a categorical feature in logistic regression (or any other model having a categorical outcome), while still maintaining some degree of explanatory power.
+
+It does this by iteratively collapsing the rows two at a time, similar to other agglomerative hierarchical clustering methods. At each step, it selects the pair of rows whose combination results in a new table with the smallest loss of chi-squared. The process is often refered to "Greenacre's Method", particularly in the SAS community, after statistician Michael J. Greenace.
+
+The returned object is an extended version of the `hclust` object used in the `stats` package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting and diagnostic plotting.
+
+## Installation
+
+You can install the current version of `greenclust` directly from this GitHub repository using the [devtools package](https://www.rstudio.com/products/rpackages/devtools/):
+
+``` r
+# install.packages("devtools")
+devtools::install_github("jeffjetton/greenclust")
+```
+
+## Example
+
+The `greenclust()` function works like `hclust()`, only it accepts a contingency table rather than a dissimilarity matrix. For the purposes of this example, we'll merge the categorical features of the [Titanic](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/Titanic.html) data set into a single, monolithic category. 
+
+```{r make.table}
+# Combine Titanic passenger attributes into a single category
+tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
+
+# Remove rows with all zeros (not valid for chi-squared test)
+tab <- tab[apply(tab, 1, sum) > 0, ]
+```
+
+This gives us a contingency table with several levels, showing the total number of passengers who survived (or not) at each level:
+
+```{r show.table, echo=FALSE}
+tab
+```
+
+From there, we can perform our clustering:
+
+```{r example_clusterplot_1}
+# Create greenclust tree object from table
+library(greenclust)
+grc <- greenclust(tab)
+
+# This can be plotted like any standard hclust tree
+plot(grc)
+```
+
+The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost at each given clustering node.
+
+The package provides a special plotting function, `greenplot(), that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful aid in weighing the trade-off between fewer clusters and lower r-squared:
+
+```{r example_greenplot}
+greenplot(grc)
+```
+
+When using this method, the customary "optimal" number of groups is found at most-significant chi-squared test (i.e., lowest p-value). This point is automatically highlighted on the above chart.
+
+The `greencut()` function is essentially a version of `cutree()` that automatically cuts a greenclust tree at this optimal level:
+
+```{r greencut}
+greencut(grc)
+```
+
+Note that `greencut()` also includes the r-squared and p-value for that particular clustering level as vector attributes. If you prefer a different cut point, but still would like to have these attributes, you can override automatic selection by specifying either `k` (number of clusters) or `h` (height, or 1 - r-squared):
+
+```{r greencut2}
+greencut(grc, k=3)
+```
+   
+---
+   
+Putting it all together:
+
+```{r example_clusterplot2}
+clusters <- greencut(grc)
+
+plot(grc)
+rect.hclust(grc, max(clusters), border=unique(clusters)+1)
+
+new.tab <- aggregate(tab, by=list(clusters), FUN=sum)[ , 2:3]
+row.names(new.tab) <- paste0("clust", unique(clusters))
+new.tab
+
+# New table still shows clear differences in survival rates
+round(prop.table(as.matrix(new.tab), 1), 3)
+```

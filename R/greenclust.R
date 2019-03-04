@@ -109,8 +109,6 @@
 #' @importFrom stats chisq.test as.dendrogram order.dendrogram
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
-    #TODO: Add references section here and in greenplot
-
     # Check for valid arguments
     if (is.na(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
         stop("x must be a non-null matrix or data frame")

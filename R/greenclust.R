@@ -1,17 +1,17 @@
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Build and Reload Package:  'Cmd + Shift + B'
-#   Check Package:             'Cmd + Shift + E'
-#   Test Package:              'Cmd + Shift + T'
+###############################################################################
+#                                                                             #
+#  greenclut                                                                  #
+#                                                                             #
+#  Part of the greenclust R package                                           #
+#                                                                             #
+#  Jeff Jetton                                                                #
+#  March 2019                                                                 #
+#                                                                             #
+###############################################################################
 
 
-################################################################################
 
-# "Hidden" functions used by greenclust()
+#########  "Hidden" functions used by greenclust()  ###########################
 
 # Return a new matrix that sums rows r1 and r2 of matrix m
 # combo.name is the name to give the newly-combined row
@@ -28,6 +28,7 @@
     row.names(new.m)[combrow] <- combo.name
     return(new.m)
 }
+
 
 # Display information about a particular clustering step
 # Called by greenclust() when verbose==TRUE
@@ -62,6 +63,10 @@
     cat(paste("R-squared:", round(chisq/initial.chi, 4), "\n\n\n"))
     utils::flush.console()
 }
+
+
+###############################################################################
+
 
 
 #' Row Clustering Using Greenacre's Method
@@ -217,184 +222,4 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     return(grc)
 }
-
-
-
-
-
-#' Cut a Greenclust Tree into Optimal Groups
-#'
-#' Cuts a \code{\link{greenclust}} tree at an automatically-determined number
-#' of groups.
-#'
-#' The cut point is calculated by finding the number of groups/clusters that
-#' results in a collapsed contingency table with the most-significant (lowest
-#' p-value) chi-squared test. If there are ties, the smallest number of
-#' groups wins.
-#'
-#' If a certain number of groups is required or a specific r-squared
-#' (1 - height) threshold is targeted, values for either \code{k} or \code{h}
-#' may be provided. (Although the regular \code{\link{cutree}} function could
-#' also be used instead in these circumstances, it may still be useful to have
-#' the additional attributes that \code{greencut()} provides.)
-#'
-#' As with \code{cutree()}, \code{k} overrides \code{h} if both are given.
-#'
-#' @param g a tree as producted by \code{\link{greenclust}}
-#' @param k an integer scalar with the desired number of groups
-#' @param h numeric scalar with the desired height where the tree should be cut
-#' @return \code{greencut} returns a vector of group memberships, with the
-#'   resulting r-squared value and p-value as object attributes,
-#'   accessable via \code{\link{attr}}.
-#' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
-#'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
-#'   \url{https://doi.org/10.1007/BF01901670}
-#' @examples
-#' # Combine Titanic passenger attributes into a single category
-#' # and create a contingency table for the non-zero levels
-#' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
-#' tab <- tab[apply(tab, 1, sum) > 0, ]
-#'
-#' grc <- greenclust(tab)
-#' greencut(grc)
-#'
-#' plot(grc)
-#' rect.hclust(grc, max(greencut(grc)),
-#'             border=unique(greencut(grc))+1)
-#' @export
-greencut <- function(g, k=NULL, h=NULL) {
-
-    # Check validity specific to greenclust objects. (The cutree function
-    # used later will check for hclust validity.)
-    if (!inherits(g, "greenclust") || is.null(g$p.values))
-        stop("not a valid 'greenclust' object")
-
-    # Determine cutpoint and group membership vector
-    if (is.null(k)) {
-        if (is.null(h)) {
-            # k and h are both null: determine cutpoint from p-values
-            min.indices <- which(g$p.values==min(g$p.values))
-            # In case of ties, go with the highest index
-            # (smallest number of clusters/groups)
-            clust.index <- min.indices[length(min.indices)]
-            # Convert index to number of clusters
-            k <- length(g$p.values) - clust.index + 2
-            # Perform cut at k
-            groups <- stats::cutree(g, k)
-        } else {
-            # k is null but h is not: cut at specified height
-            groups <- stats::cutree(g, h=h)
-            # Convert number of clusters to index
-            k <- max(groups)
-            clust.index <- length(g$p.values) - k + 2
-        }
-    } else {
-        # k is not null: cut at specified number of groups
-        groups <- stats::cutree(g, k)
-        # Convert number of clusters to index
-        clust.index <- length(g$height) - k + 2
-    }
-
-    # Add attributes for r-squared and p-value at cutpoint
-    attr(groups, "r.squared") <- 1 - g$height[clust.index]
-    attr(groups, "p.value") <- g$p.values[clust.index]
-
-    return(groups)
-}
-
-
-#' Plot Statistics for a Greenclust Object
-#'
-#' Displays a connected scatterplot showing the r-squared values (x-axis) and
-#' p-values (y-axis) at each clustering step of a \code{\link{greenclust}}
-#' object. Points are labeled with their cutpoints, i.e., the number of
-#' groups/clusters found at each step. The point with the lowest p-value
-#' (typically the optimal cutpoint) is highlighted.
-#' @param g an object of the type produced by \code{\link{greenclust}}
-#' @param type 1-character string giving the type of plot desired: "p" for
-#'   points, "l" for lines, and "b" (the default) for both points and lines.
-#' @param bg a vector of background colors for open plot symbols. Also used
-#'   for the line color if type is "b".
-#' @param pch a vector of plotting characters or symbols: see
-#'   \code{\link{points}}
-#' @param cex a numerical vector giving the amount by which plotting
-#'   characters and symbols should be scaled relative to the default. For
-#'   this plot, the numeric labels on each point are always scaled to
-#'   0.80 of this value.
-#' @param optim.col color to use for highlighting the "optimal" cutpoint.
-#' @param pos specifies the position of labels relative to their points:
-#'   1 = below, 2 = left, 3 = above, and 4 = right.
-#' @param main an overall title for the plot.
-#' @param xlab a title for the x axis.
-#' @param ylab a title for the y axis.
-#' @param ... additional arguments to be passed to the plotting methods.
-#' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
-#'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
-#'   \url{https://doi.org/10.1007/BF01901670}
-#' @examples
-#' # Combine Titanic passenger attributes into a single category
-#' # and create a contingency table for the non-zero levels
-#' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
-#' tab <- tab[apply(tab, 1, sum) > 0, ]
-#'
-#' grc <- greenclust(tab)
-#' greenplot(grc)
-#'
-#'
-#' # Plot using custom graphical parameters
-#' greenplot(grc, type="p", bg="lightblue", optim.col="darkorange",
-#'           pos=3, bty="n", cex.main=2, col.main="blue")
-#' @export
-greenplot <- function(g, type="b", bg="gray75", pch=21,
-                      cex=1, optim.col="red", pos=2,
-                      main="P-Value vs. R-Squared for Num. Clusters",
-                      xlab="r-squared", ylab=NULL, ...) {
-
-    if (is.null(g$p.values))
-        stop("g is missing a 'p.values' vector")
-    if (is.null(g$height))
-        stop("g is missing a 'height' vector")
-
-    # Add a small adjustment if any p-values are zero
-    if (sum(g$p.values==0) > 1) {
-        log.p <- log(g$p.values + 1e-15)
-        if (is.null(ylab)) {
-            ylab <- "log of (p-value + 1e-15)"
-        }
-    } else {
-        log.p <- log(g$p.values)
-        if (is.null(ylab)) {
-            ylab <- "log of p-value"
-        }
-    }
-
-    # Get r-squared from height vector
-    r2 <- 1 - g$height
-    # There's always one more height than p-value (the
-    # final "1" height at the end). Remove it.
-    r2 <- r2[-length(r2)]
-
-    clust.num <- length(g$height):2
-    optim.clust <- max(greencut(g))
-    bg <- ifelse(clust.num==optim.clust, optim.col, bg)
-
-    if (type=="b" || type=="l") {
-        col <- ifelse(type=="b", bg, "black")
-        graphics::plot(r2, log.p, type="l", col=col,
-                       xlab=xlab, ylab=ylab,
-                       main=main, ...)
-    }
-    if (type=="b" || type=="p") {
-        graphics::points(r2, log.p, bg=bg, pch=pch, cex=cex, ...)
-    }
-    if (type=="p") {
-        graphics::plot(r2, log.p, bg=bg, pch=pch, cex=cex,
-                       xlab=xlab, ylab=ylab, main=main, ...)
-    }
-
-    graphics::text(r2, log.p, clust.num, pos=pos, cex=cex*0.8,
-                   col=ifelse(clust.num==optim.clust, optim.col, 1),
-                   ...)
-}
-
 

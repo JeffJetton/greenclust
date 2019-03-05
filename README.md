@@ -101,7 +101,7 @@ greencut(grc)
 ## [1] 1.398205e-137
 ```
 
-Note that `greencut()` also includes the r-squared and p-value for that particular clustering level as vector attributes. If you prefer a different cut point, but still would like to have these attributes, you can override automatic selection by specifying either `k` (number of clusters) or `h` (height, or 1 - r-squared):
+Note that `greencut()` also includes the r-squared and p-value for that particular clustering level as vector attributes. If you want a different cut point, but would still like to have these attributes, you can override automatic selection by specifying either `k` (number of clusters) or `h` (height, or 1 - r-squared):
 
 ``` r
 greencut(grc, k=3)
@@ -114,9 +114,9 @@ greencut(grc, k=3)
 ##   Adult.Male.Crew Adult.Female.Crew 
 ##                 2                 1 
 ## attr(,"r.squared")
-## [1] 0.8685051
+## [1] 0.948656
 ## attr(,"p.value")
-## [1] 8.355125e-125
+## [1] 1.208027e-134
 ```
 
 ------------------------------------------------------------------------

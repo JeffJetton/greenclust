@@ -81,7 +81,7 @@ greencut <- function(g, k=NULL, h=NULL) {
         # k is not null: cut at specified number of groups
         groups <- stats::cutree(g, k)
         # Convert number of clusters to index
-        clust.index <- length(g$height) - k + 2
+        clust.index <- length(g$p.values) - k + 2
     }
 
     # Add attributes for r-squared and p-value at cutpoint

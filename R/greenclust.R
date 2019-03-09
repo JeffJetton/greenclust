@@ -125,6 +125,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     if(sum(apply(x, 2, sum)==0) > 0)
         stop("all column totals must be greater than zero")
 
+    # If there are no row names, give them names
+    if (is.null(rownames(x))) {
+        rownames(x) <- 1:nrow(x)
+    }
+
     # Remember chi-squared for the initial, un-clustered matrix
     suppressWarnings(initial.chi <- chisq.test(x, correct=correct)$statistic)
     # Replace row names with negative row numbers, for building merge matrix

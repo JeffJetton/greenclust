@@ -110,5 +110,5 @@ round(prop.table(as.matrix(new.tab), 1), 3)
 
 ## Additional Resources
 
-* [Clustering the Rows and Columns of a Contingency Table](https://doi.org/10.1007/BF01901670)
-* [Correcting the Quasi-complete Separation Issue in Logistic Regression Models](https://pdfs.semanticscholar.org/bbb0/2b26cf6a1628b27ddef70a83b92962d6dce2.pdf) (pdf)
+* Michael J. Greenacre: [Clustering the Rows and Columns of a Contingency Table](https://doi.org/10.1007/BF01901670)
+* Xinghe Lu: [Correcting the Quasi-complete Separation Issue in Logistic Regression Models](https://pdfs.semanticscholar.org/bbb0/2b26cf6a1628b27ddef70a83b92962d6dce2.pdf) (pdf)

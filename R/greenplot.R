@@ -62,6 +62,8 @@ greenplot <- function(g, type="b", bg="gray75", pch=21,
         stop("g is missing a 'p.values' vector")
     if (is.null(g$height))
         stop("g is missing a 'height' vector")
+    if (!(type %in% c("b", "l", "p")))
+        stop("type must be 'p' (points), 'l' (lines), or 'b' (both)")
 
     # Add a small adjustment if any p-values are zero
     if (sum(g$p.values==0) > 1) {
@@ -92,7 +94,7 @@ greenplot <- function(g, type="b", bg="gray75", pch=21,
                        xlab=xlab, ylab=ylab,
                        main=main, ...)
     }
-    if (type=="b" || type=="p") {
+    if (type=="b") {
         graphics::points(r2, log.p, bg=bg, pch=pch, cex=cex, ...)
     }
     if (type=="p") {

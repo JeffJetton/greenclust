@@ -16,8 +16,10 @@ test_that("greenclust stops when x has dimensions less than 3x2", {
 })
 
 test_that("greenclust stops when x is not a matrix or data frame", {
-    expect_error(greenclust(NULL), "non-null")
-    expect_error(greenclust(NA), "non-null")
+    expect_error(greenclust(NULL), "non-null", fixed=TRUE)
+    expect_error(greenclust(NA), "non-null", fixed=TRUE)
+    expect_error(greenclust(matrix(c(1:3, NA, 5:7, NA, 9), ncol=3)),
+                 "non-null", fixed=TRUE)
     expect_error(greenclust("abc"), "matrix")
     expect_error(greenclust(c("a", "b", "c"), "matrix"))
     expect_error(greenclust(c("a", "b", "c"), "matrix"))

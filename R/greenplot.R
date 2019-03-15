@@ -60,10 +60,24 @@ greenplot <- function(g, type="b", bg="gray75", pch=21,
 
     if (is.null(g$p.values))
         stop("g is missing a 'p.values' vector")
+    if (anyNA(g$p.values) || sum(is.nan(g$p.values)) != 0)
+        stop("p.values vector cannot contain NAs")
+    if (!is.numeric(g$p.values))
+        stop("p.values vector must be numeric")
     if (is.null(g$height))
         stop("g is missing a 'height' vector")
+    if (anyNA(g$height) || sum(is.nan(g$height)) != 0)
+        stop("height vector cannot contain NAs")
+    if (!is.numeric(g$height))
+        stop("height vector must be numeric")
     if (!(type %in% c("b", "l", "p")))
         stop("type must be 'p' (points), 'l' (lines), or 'b' (both)")
+
+
+
+    #Should error if any element in either the p.values or height vectors is NA (or NAN or non-numeric... maybe infinite?)
+
+   # Also add a unit test for this
 
     # Add a small adjustment if any p-values are zero
     if (sum(g$p.values==0) > 1) {

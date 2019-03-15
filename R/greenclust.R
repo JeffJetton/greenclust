@@ -112,7 +112,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     # Check for valid arguments
     if (anyNA(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
         stop("x must be a non-null matrix or data frame")
-    if (!is.numeric(x))
+    if (!is.numeric(x) || sum(is.nan(x)) != 0)
         stop("x must be numeric")
     if (any(x < 0) || sum(is.infinite(x)) != 0)
         stop("all elements must be nonnegative and finite")

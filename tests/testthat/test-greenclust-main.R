@@ -30,6 +30,7 @@ test_that("greenclust stops when x is not a matrix or data frame", {
 
 test_that("greenclust stops when x is non-numeric or has negative/non-finite values", {
     expect_error(greenclust(matrix(rep("foo", 20), ncol=4)), "numeric")
+    expect_error(greenclust(matrix(c(1:3, NaN, 5:8, NaN), ncol=3)), "x must be")
     expect_error(greenclust(matrix(-10:9, ncol=4)), "negative")
     expect_error(greenclust(matrix(c(-Inf, 1:7, Inf), ncol=3)), "finite")
 })

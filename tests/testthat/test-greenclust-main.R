@@ -2,10 +2,9 @@ context("greenclust (main function)")
 library(greenclust)
 
 # Test matrix
-set.seed(24601)
-m <- matrix(sample(1:45), ncol=3)
+m <- matrix(c(1:15, rep(c(0, 20, 25), 5), 45:31), ncol=3)
 colnames(m) <- c("yes", "no", "unknown")
-rownames(m) <- sample(state.name, nrow(m))
+rownames(m) <- state.name[seq(3, by=3, length.out=nrow(m))]
 
 
 test_that("greenclust stops when x has dimensions less than 3x2", {
@@ -75,12 +74,12 @@ test_that("greenclust works when verbose=TRUE", {
 
 test_that("greenclust gives expected results on a test matrix", {
     g <- greenclust(m)
-    expect_equal(g$order, c(2, 8, 7, 11, 4, 13, 12, 3, 5, 6, 14, 1, 9, 10, 15))
-    expect_equal(g$merge[1, ], c(-1, -9))
-    expect_equal(g$merge[14, ], c(11, 13))
-    expect_equal(sum(g$tie), 0)
-    expect_equal(round(min(log(g$p.values))), -106)
-    expect_equal(sum(round(g$height * 100)), 207)
+    expect_equal(g$order, c(1, 4, 7, 10, 13, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15))
+    expect_equal(g$merge[1, ], c(-14, -15))
+    expect_equal(g$merge[14, ], c(12, 13))
+    expect_equal(sum(g$tie), 4)
+    expect_equal(round(min(log(g$p.values))), -59)
+    expect_equal(round(sum(g$height) * 100), 183)
 })
 
 

@@ -1,7 +1,7 @@
 Package: greenclust
 Type: Package
 Title: Combine Categories Using Greenacre's Method
-Version: 1.0.1
+Version: 0.0.0.9050
 Authors@R: person("Jeff", "Jetton", , "jeff.jetton@gmail.com", c("aut", "cre"))
 Description: Implements a method of iteratively collapsing the rows of a
     contingency table, two at a time, by selecting the pair of categories whose

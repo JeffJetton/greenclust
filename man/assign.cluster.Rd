@@ -10,33 +10,32 @@ assign.cluster(x, clusters)
 \item{x}{a factor or character vector representing a categorical variable}
 
 \item{clusters}{a numeric vector representing cluster numbers, such as an
-object returned by \code{\link{greenclust}} or \code{\link{hclust}}}
-
-\item{src}{optional factor or character vector of categories to use for
-the cluster numbers in \code{cluster} if they do not already exist in
-the  \code{names} attribute of  \code{cluster}}
+object returned by \code{\link{greencut}} or \code{\link{cutree}}}
+}
+\value{
+A numeric vector of the same length as \code{x}, representing
+  assigned cluster numbers.
 }
 \description{
 Maps a vector of cluster numbers to another categorical vector,
-yielding a new vector of matching cluster numbers.
+yielding a new vector of matching cluster numbers. Useful for distributing
+cluster numbers back out to the original observations in cases where the
+clustering was performed on a table of unique levels rather than directly
+on the observations (such as with \code{\link{greenclust}}).
 }
 \details{
-Useful for cases where clustering was performed on a table of unique levels
-(as with \code{\link{greenclust}}), and the clusters need to be distributed
-back out to the original observations. In this case, the \code{cluster}
-vector will typically have a \code{names} attribute of corresponding
-categories, and \code{src} will not be used.
+Any categories in \code{x} that do not exist as names in \code{cluster}
+are assigned the cluster number that is most-frequently assigned to the
+other, existing categories (with ties going to the lowest cluster number).
 
-Also handy for assigning clusters to a test data set when the original
-clustering was done on a training set. Here, the names of \code{cluster}
-will represent original observations rather than category names, so the
-\code{src} vector will be needed.
-
-Any categories in \code{x} that do not exist as either names in
-\code{cluster} or elements in \code{src} are assigned the most frequent
-cluster number (with ties going to the lowest value).
+If there are duplicate names in \code{cluster}, the first occurrence
+takes precedence.
 }
 \examples{
-# Example goes here
-
+# Cluster feed types based on number of "underweight" chicks
+grc <- greenclust(table(chickwts$feed,
+                        ifelse(chickwts$weight < 200, "Y", "N")))
+# Assign clusters to each original observation
+feed.clustered <- assign.cluster(chickwts$feed, greencut(grc))
+table(chickwts$feed, feed.clustered)
 }

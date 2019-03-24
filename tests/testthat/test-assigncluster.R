@@ -2,7 +2,7 @@ context("assign.cluster")
 library(greenclust)
 
 
-test_that(paste("assign.cluster returns expected results on a test cluster"), {
+test_that("assign.cluster returns expected results on a test cluster", {
     # Create a test clustering
     grc <- greenclust(table(chickwts$feed,
                             ifelse(chickwts$weight < 200, "Y", "N")))
@@ -22,4 +22,42 @@ test_that(paste("assign.cluster returns expected results on a test cluster"), {
     expect_equal(tab[7, 3], 12)
 })
 
-# Return value should be numeric
+
+test_that("assign.cluster stops when x is invalid", {
+    clusters  <- 1:3
+    names(clusters) <- c("november", "oscar", "papa")
+
+    expect_error(assign.cluster(NULL, clusters),
+                 "x must be a factor or character vector")
+    expect_error(assign.cluster(rep(c(TRUE, FALSE), 10), clusters),
+                 "x must be a factor or character vector")
+    expect_error(assign.cluster(1:10, clusters),
+                 "x must be a factor or character vector")
+    expect_error(assign.cluster(c("a", "b", NA, "d"), clusters),
+                 "x must not contain NAs")
+})
+
+
+test_that("assign.cluster stops when 'clusters' is invalid", {
+    x <- c(rep("a", 5), rep("b", 5))
+    badclusters  <- 1:3
+    names(badclusters) <- c("tango", NA, "uniform")
+
+    expect_error(assign.cluster(x, NULL),
+                 "'clusters' must be a numeric vector", fixed=TRUE)
+    expect_error(assign.cluster(x, c("a", "b", "c")),
+                 "'clusters' must be a numeric vector", fixed=TRUE)
+    expect_error(assign.cluster(x, 1:3),
+                 "elements in 'clusters' must have names", fixed=TRUE)
+    expect_error(assign.cluster(x, badclusters),
+                 "NA or.*names not allowed for .clusters.")
+})
+
+
+test_that("assign.cluster gives no errors when x and clusters are valid", {
+    clusters  <- 1:3
+    names(clusters) <- c("quebec", "romeo", "sierra")
+
+    expect_silent(assign.cluster(c("a", "b", "c", "a"), clusters))
+    expect_silent(assign.cluster(as.factor(c("e", "f", "f")), clusters))
+})

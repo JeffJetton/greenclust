@@ -1,25 +1,45 @@
 context("assign.cluster")
 library(greenclust)
 
+# Create a test clustering
+grc <- greenclust(table(chickwts$feed,
+                        ifelse(chickwts$weight < 200, "Y", "N")))
+clusters <- greencut(grc)
+# Vector of renamed observations (to force non-matches)
+feed.types <- as.character(chickwts$feed)
+feed.types[seq(1, length(feed.types), 12)] <- "newlevel1"
+feed.types[seq(3, length(feed.types), 15)] <- "newlevel2"
 
-test_that("assign.cluster returns expected results on a test cluster", {
-    # Create a test clustering
-    grc <- greenclust(table(chickwts$feed,
-                            ifelse(chickwts$weight < 200, "Y", "N")))
-    # Rename the type of some original observations
-    feed.types <- as.character(chickwts$feed)
-    feed.types[seq(1, length(feed.types), 12)] <- "newlevel1"
-    feed.types[seq(3, length(feed.types), 15)] <- "newlevel2"
-    feed.clustered <- assign.cluster(feed.types, greencut(grc))
-    # Summarize clustering/assignment results
-    tab <- table(names(feed.clustered), feed.clustered)
 
-    expect_equal(dim(tab), c(8, 3))
-    expect_equal(sum(tab), 71)
-    expect_equal(as.numeric(tab[,1]), c(10, 0, 0, 10, 6, 5, 0, 10))
+test_that(paste("assign.cluster returns expected results on a test cluster",
+                "when impute is left to default (FALSE)"), {
+    feed.clustered <- assign.cluster(feed.types, clusters)
+    tab <- table(names(feed.clustered), feed.clustered, useNA="always")
+
+    expect_equal(dim(tab), c(9, 4))
+    expect_equal(sum(tab[,1:3]), 60)
+    expect_equal(as.numeric(tab[,1]), c(10, 0, 0, 10, 0, 0, 0, 10, 0))
     expect_equal(tab[2, 2], 8)
     expect_equal(tab[3, 3], 10)
     expect_equal(tab[7, 3], 12)
+    expectation <- c(6, 5)
+    names(expectation) <- c("newlevel1", "newlevel2")
+    expect_equal(tab[5:6, 4], expectation)
+})
+
+
+test_that(paste("assign.cluster returns expected results on a test cluster",
+                "when impute is TRUE"), {
+    feed.clustered <- assign.cluster(feed.types, clusters, impute=TRUE)
+    tab <- table(names(feed.clustered), feed.clustered, useNA="always")
+
+    expect_equal(dim(tab), c(9, 4))
+    expect_equal(sum(tab[,1:3]), 71)
+    expect_equal(as.numeric(tab[,1]), c(10, 0, 0, 10, 6, 5, 0, 10, 0))
+    expect_equal(tab[2, 2], 8)
+    expect_equal(tab[3, 3], 10)
+    expect_equal(tab[7, 3], 12)
+    expect_equal(sum(tab[ ,4]), 0)
 })
 
 
@@ -58,6 +78,7 @@ test_that("assign.cluster gives no errors when x and clusters are valid", {
     clusters  <- 1:3
     names(clusters) <- c("quebec", "romeo", "sierra")
 
-    expect_silent(assign.cluster(c("a", "b", "c", "a"), clusters))
-    expect_silent(assign.cluster(as.factor(c("e", "f", "f")), clusters))
+    expect_silent(assign.cluster(c(rep("quebec", 5), rep("sierra", 5)),
+                                   clusters))
+    expect_silent(assign.cluster(as.factor(rep("romeo", 10)), clusters))
 })

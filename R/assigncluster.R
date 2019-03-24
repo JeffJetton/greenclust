@@ -38,10 +38,26 @@
 #' feed.clustered <- assign.cluster(chickwts$feed, greencut(grc))
 #' table(chickwts$feed, feed.clustered)
 #' @export
-assign.cluster <- function(x, clusters) {
-    # TODO:   Handle cases where x category not in clusters
+assign.cluster <- function(x, clusters, impute=FALSE) {
 
-    # Check for NA, and other invalid types
+    # TODO: What if x has NO matches to clusters?
+    #       Make imputation an option? Warn when it occurs? impute=FALSE
+
+    # Check for valid arguments
+    if (is.null(x) || !(is.factor(x) || is.character(x)))
+        stop("x must be a factor or character vector")
+    if (anyNA(x))
+        stop("x must not contain NAs")
+    if (is.null(clusters) || !is.numeric(clusters) ||
+        sum(is.nan(clusters)) != 0)
+        stop("'clusters' must be a numeric vector")
+    if (anyNA(clusters))
+        stop("'clusters' must not contain NAs")
+    cnames <- names(clusters)
+    if (is.null(cnames) || !is.character(cnames))
+        stop("elements in 'clusters' must have names")
+    if (anyNA(cnames) || "" %in% cnames)
+        stop("NA or \"\" names not allowed for 'clusters'")
 
     # Note that match() will, by default, return the first match only
     newx <- clusters[match(x, names(clusters))]

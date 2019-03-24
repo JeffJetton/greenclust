@@ -4,13 +4,16 @@
 \alias{assign.cluster}
 \title{Assign clusters to a new vector of categories}
 \usage{
-assign.cluster(x, clusters)
+assign.cluster(x, clusters, impute = FALSE)
 }
 \arguments{
 \item{x}{a factor or character vector representing a categorical variable}
 
-\item{clusters}{a numeric vector representing cluster numbers, such as an
+\item{clusters}{a named numeric vector of cluster numbers, such as an
 object returned by \code{\link{greencut}} or \code{\link{cutree}}}
+
+\item{impute}{a boolean controlling the behavior when a value in \code{x}
+is not found in \code{names(clusters)} (see Details).}
 }
 \value{
 A numeric vector of the same length as \code{x}, representing
@@ -24,11 +27,14 @@ clustering was performed on a table of unique levels rather than directly
 on the observations (such as with \code{\link{greenclust}}).
 }
 \details{
-Any categories in \code{x} that do not exist as names in \code{cluster}
-are assigned the cluster number that is most-frequently assigned to the
-other, existing categories (with ties going to the lowest cluster number).
+Any categories in \code{x} that do not exist in \code{names(clusters)}
+are given a cluster of \code{NA}, or (if \code{impute} is \code{TRUE})
+assigned the cluster number that is most-frequently used for the other
+existing categories, with ties going to the lowest cluster number. If
+there are no matching clusters for any of the categories in \code{x},
+imputation will simply use the first cluster number in \code{clusters}.
 
-If there are duplicate names in \code{cluster}, the first occurrence
+If there are duplicate names in \code{clusters}, the first occurrence
 takes precedence.
 }
 \examples{

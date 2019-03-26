@@ -1,10 +1,8 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
-date: "`r Sys.Date()`"
+title: "Introduction to greenclust"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Introduction to greenclust}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,6 +13,122 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+For various reasons (smaller models, elminating quasi-complete separation issues, etc.) there is often a need to reduce the number of levels present in a categorical (factor) variable when using that variable in a model. Typically this is done by combining some levels together into a new group.
+
+For example, a postal code variable might be transformed to lump the codes with a relatively small number of observations into a single "other" category. However it's possible that some of these low-frequency postal codes might contain information that would improve the final model. Grouping them in with other postal codes can dilute the predictive value of the variable.
+
+The `greenclust` package provides a quick way to combine categories/levels by iteratively clustering the categories two at a time. At each step, the pair is chosen whose combination results in the smallest reduction in the resulting contingency table's chi-squared statistic. This technique, sometimes called "Greenacre's Method", preserves as much information in the variable as possible for any given number of final groups. Levels with similar distributions of the target variable will tend to be grouped together.
+
+## Example: Predicting High-Value Home Sales Using Logistic Regression
+
+Let's assume you run a business that provides real estate services in Ames, Iowa. Based on a demographic analysis and your own experience, you've decided to target your marketing efforts on owners of homes that could sell for over $250,000.
+
+### Obtaining the Data
+
+The `AmesHousing` package contains details on nearly 3,000 residential properties sold in Ames from 2006 to 2010.
+
+```{r prepdata}
+library(AmesHousing)
+
+# Pull out just the fields we're interested in
+data <- data.frame(highval=ames_raw$SalePrice > 250000,
+                    sqft=ames_raw$`Gr Liv Area`,
+                    baths=ames_raw$`Full Bath` + ames_raw$`Half Bath` / 2,
+                    age=ames_raw$`Yr Sold` - ames_raw$`Year Built`,
+                    neighborhood=ames_raw$Neighborhood)
+
+# The "high value" properties account for about 15% of the data set
+round(table(data$highval)/nrow(data), 3)
+```
+Note that there are 28 different values in the `neighborhood` variable:
+```{r neighborhood_counts_table, echo=FALSE}
+tab <- table(data$neighborhood)
+df <- data.frame(n1=names(tab)[1:14],
+                 c1=as.vector(tab[1:14]),
+                 spacer1=rep("    ", 14),
+                 spacer2=rep("    ", 14),
+                 spacer3=rep("    ", 14),
+                 n2=names(tab)[15:28],
+                 c2=as.vector(tab[15:28]))
+names(df) <- c("neighborhood", "count", "    ",  "    ", "    ", "neighborhood", "count")
+knitr::kable(df)
+```
+   
+We'll want to reduce that down to a more managable number of categories.
+    
+### Count-Based Clustering (Thresholding)
+
+First we'll group some of these neighborhoods together using a simple count threshold. From the table above, it looks like 150 might make a good cutoff point for our "other" group.
+```{r clustering_by_count}
+neigh.counts <- table(data$neighborhood)
+largest.neighborhoods <- names(neigh.counts[neigh.counts > 150])
+data$countcluster <- as.factor(ifelse(data$neighborhood %in% largest.neighborhoods,
+                                      as.character(data$neighborhood),
+                                      "*** Other ***" ))
+```
+   
+This reduces the number of categories from 28 down to just nine:
+   
+```{r countcluster_table, echo=FALSE}
+tab <- table(data$countcluster)
+df <- data.frame(countcluster=names(tab),
+                 count=as.vector(tab))
+knitr::kable(df)
+```
+
+### greenclust Clustering
+
+Next we'll create a variable of clustered neighborhoods using `greenclust`. It requires a contingency table as an argument:
+   
+```{r clustering_by_greenclust, fig.width=7, fig.height=6}
+library(greenclust)
+tab <- table(data$neighborhood, data$highval)
+head(tab)
+
+grc <- greenclust(tab)
+
+# Since greenclust returns an hclust-compatible object, trees
+# can be easily displayed using the base plot function
+plot(grc)
+```
+   
+The package's `greenplot` function graphically displays the trade-off between the number of groups/clusters and the resulting r-squared values and chi-squared test significances. It highlights an automatically-chosen "optimal" number of clusters.
+   
+```{r greenplot_example, fig.width=7, fig.height=6}
+# Note that we're overriding the default text position to help
+# us better see the cluster numbers for this particular curve
+greenplot(grc, pos=3)
+```
+   
+Seven clusters looks pretty good, so we'll stick with that. By default, the `greencut` function will cut the tree at that optimal point.
+   
+```{r greencut_example, fig.width=7, fig.height=6}
+clusters <- greencut(grc)
+clusters
+
+# Re-plot the tree, and show bounding rectangles around the clusters
+plot(grc)
+rect.hclust(grc, max(clusters), border="blue")
+```
+   
+The package's `assign.cluster` function provides an easy way to maps those clusters back out to the original observations and create a new variable in our data set:
+   
+```{r assigncluster_example}
+data$greencluster <- assign.cluster(data$neighborhood, clusters)
+```
+    
+It's interesting to compare the `greenclust` cluster numbers to the thresholded groups:
+   
+```{r cluster_comp, echo=FALSE}
+tab <- table(data$countcluster, data$greencluster)
+knitr::kable(tab)
+```
+   
+* Most of the bigger neighborhoods that the threshold clustering method left uncombined were found to be similar enough by `greenclust` to include together in the first cluster number.
+* Meanwhile, `greenclust` determined that several of the "Other" neighborhoods were actually *different* enough to merit separate clusters.
+* Both methods wound up putting Somerset Village ("Somerst") in a group by itself.
+   
+---------
 
 Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
 

@@ -33,7 +33,7 @@
 #'   object returned by \code{\link{greencut}} or \code{\link{cutree}}
 #' @param impute a boolean controlling the behavior when a value in \code{x}
 #'   is not found in \code{names(clusters)} (see Details).
-#' @return A numeric vector of the same length as \code{x}, representing
+#' @return A factor vector of the same length as \code{x}, representing
 #'   assigned cluster numbers.
 #' @examples
 #' # Cluster feed types based on number of "underweight" chicks
@@ -88,7 +88,7 @@ assign.cluster <- function(x, clusters, impute=FALSE) {
         }
     }
 
-    return(newx)
+    return(as.factor(newx))
 }
 
 

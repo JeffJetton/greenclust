@@ -16,7 +16,7 @@ object returned by \code{\link{greencut}} or \code{\link{cutree}}}
 is not found in \code{names(clusters)} (see Details).}
 }
 \value{
-A numeric vector of the same length as \code{x}, representing
+A factor vector of the same length as \code{x}, representing
   assigned cluster numbers.
 }
 \description{

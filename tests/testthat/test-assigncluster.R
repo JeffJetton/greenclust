@@ -43,6 +43,11 @@ test_that(paste("assign.cluster returns expected results on a test cluster",
 })
 
 
+test_that("assign.cluster returns a factor", {
+    expect_equal(is.factor(assign.cluster(feed.types, clusters)), TRUE)
+})
+
+
 test_that("assign.cluster stops when x is invalid", {
     clusters  <- 1:3
     names(clusters) <- c("november", "oscar", "papa")

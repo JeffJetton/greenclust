@@ -1,5 +1,5 @@
 ## Test environments
-* OS X install: R 3.5.2
+* OS X install: R 3.6.0
 * win-builder: R-devel
    
 ## R CMD check results

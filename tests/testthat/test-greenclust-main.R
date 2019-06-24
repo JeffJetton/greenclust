@@ -69,7 +69,7 @@ test_that("greenclust works when verbose=TRUE", {
     expect_output(greenclust(matrix(1:6, ncol=2), verbose=TRUE),
                   "Step: 1", fixed=TRUE)
     expect_output(greenclust(matrix(1:6, ncol=2), verbose=TRUE),
-                  "Cluster 1    5   11")
+                  "Cluster 1")
 })
 
 test_that("greenclust gives expected results on a test matrix", {

@@ -8,6 +8,16 @@
 
 R CMD check succeeded
 
+## Win-builder log
+
+Status: 1 NOTE "Possibly mis-spelled words in DESCRIPTION"
+   
+* Greenacre's (3:33)
+* hclust (9:46)
+* iteratively (6:37)
+    
+These words are spelled correctly
+
 ## Downstream dependencies
 
 There are currently no downstream dependencies for this package

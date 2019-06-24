@@ -23,9 +23,9 @@
 #'
 #' If a certain number of groups is required or a specific r-squared
 #' (1 - height) threshold is targeted, values for either \code{k} or \code{h}
-#' may be provided. (Although the regular \code{\link{cutree}} function could
-#' also be used instead in these circumstances, it may still be useful to have
-#' the additional attributes that \code{greencut()} provides.)
+#' may be provided. (While the regular \code{\link{cutree}} function could
+#' also be used in this circumstance, it may still be useful to have the
+#' additional attributes that \code{greencut()} provides.)
 #'
 #' As with \code{cutree()}, \code{k} overrides \code{h} if both are given.
 #'
@@ -38,6 +38,7 @@
 #' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
 #'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
 #'   \url{https://doi.org/10.1007/BF01901670}
+#' @seealso \code{\link{greenclust}}, \code{\link{greenplot}}, \code{\link{assign.cluster}}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' # and create a contingency table for the non-zero levels

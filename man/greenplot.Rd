@@ -65,3 +65,6 @@ Greenacre, M.J. (1988) "Clustering the Rows and Columns of
   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
   \url{https://doi.org/10.1007/BF01901670}
 }
+\seealso{
+\code{\link{greenclust}}, \code{\link{greencut}}, \code{\link{assign.cluster}}
+}

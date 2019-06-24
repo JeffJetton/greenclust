@@ -39,6 +39,7 @@
 #' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
 #'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
 #'   \url{https://doi.org/10.1007/BF01901670}
+#' @seealso \code{\link{greenclust}}, \code{\link{greencut}}, \code{\link{assign.cluster}}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' # and create a contingency table for the non-zero levels

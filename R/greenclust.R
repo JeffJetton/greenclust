@@ -82,10 +82,14 @@
 #'   p-value at each step
 #' @return An object of class \code{greenclust} which is compatible with most
 #'   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
-#'   \code{\link{rect.hclust}()}. TODO: explain height, p.values, and ties
+#'   \code{\link{rect.hclust}()}. The "heights" are r-squared values at each
+#'   clustering step. The greenclust object also includes a vector for the
+#'   p.value of the chi-squared test at each step and a boolean vector
+#'   indicating whether or not a step had a tie for "winner".
 #' @references Greenacre, M.J. (1988) "Clustering the Rows and Columns of
 #'   a Contingency Table," \emph{Journal of Classification 5}, 39-51.
 #'   \url{https://doi.org/10.1007/BF01901670}
+#' @seealso \code{\link{greencut}}, \code{\link{greenplot}}, \code{\link{assign.cluster}}
 #' @examples
 #' # Combine Titanic passenger attributes into a single category
 #' tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))

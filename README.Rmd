@@ -19,7 +19,7 @@ The `greenclust` package implements a method of grouping/clustering the categori
 
 It does this by iteratively collapsing the rows two at a time, similar to other agglomerative hierarchical clustering methods. At each step, it selects the pair of rows whose combination results in a new table with the smallest loss of chi-squared. This process is often refered to "Greenacre's Method", particularly in the SAS community, after statistician Michael J. Greenacre.
 
-The returned object is an extended version of the [`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html) object used in the [`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html) package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting and diagnostic plotting.
+The returned object is an extended version of the [`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html) object used in the [`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html) package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting, diagnostic plotting, and assigning derived clusters back to the source data.
 
 ## Installation
 
@@ -62,19 +62,23 @@ grc <- greenclust(tab)
 plot(grc)
 ```
 
-The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost at each given clustering node.
+The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost when the two categories are combined at each clustering step.
    
 ### Other Functions
    
-The package provides a special plotting function, `greenplot()`, that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful aid in weighing the trade-off between fewer clusters and lower r-squared:
+#### greenplot
+    
+The package provides a diagnostic plotting function that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful tool when weighing the trade-off between fewer clusters and lower r-squared:
 
 ```{r example_greenplot}
 greenplot(grc)
 ```
 
 When using this method, the customary "optimal" number of groups is found at most-significant chi-squared test (i.e., lowest p-value). This point is automatically highlighted by `greenplot()`.
-
-The `greencut()` function is essentially a version of `cutree()` that cuts a greenclust tree at this optimal level by default:
+   
+#### greencut
+    
+`greencut()` is essentially a version of `cutree()` that cuts a greenclust tree at the optimal level (mentioned above) by default:
 
 ```{r greencut}
 greencut(grc)
@@ -85,28 +89,32 @@ Note that `greencut()` also includes the r-squared and p-value for that particul
 ```{r greencut2}
 greencut(grc, k=3)
 ```
-   
----
-   
-Putting it all together:
+    
+#### assign.cluster
+    
+After clustering, you'll typically want to associate the resulting cluster numbers back to the original data. For example, if we clustered the feed supplements of the [chickwts](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html) data based on the number of "underweight" chicks and then cut the tree, the resulting vector would have an element for each unique category level, rather than an element for each actual observation:
 
-```{r example_clusterplot2, fig.height=8}
-clusters <- greencut(grc)
+```{r assign.cluster1}
+chick.table <- table(chickwts$feed,
+                     ifelse(chickwts$weight < 200, "Y", "N"))
+chick.tree <- greenclust(chick.table)
+# Use the default cut point
+chick.clusters <- greencut(chick.tree)
 
-plot(grc)
-rect.hclust(grc, max(clusters), border=unique(clusters)+1)
-
-# Categories by cluster number
-cbind(clusters, tab)[order(clusters, rownames(tab)), ]
-
-# Create collapsed contingency table
-new.tab <- aggregate(tab, by=list(clusters), FUN=sum)[ , 2:3]
-rownames(new.tab) <- paste0("clust", unique(clusters))
-new.tab
-
-# New table still shows clear differences in survival rates
-round(prop.table(as.matrix(new.tab), 1), 3)
+# The resulting six-element vector shows the cluster number for each level
+chick.clusters
 ```
+`assign.cluster()` is a simple convenience function for expanding those cluster numbers back out:
+```{r assign.cluster2}
+chickwts$cluster <- assign.cluster(chickwts$feed, chick.clusters)
+
+# Sample of data with new cluster numbers
+chickwts[9:13, ]
+
+# Observation counts by original level and new cluster
+print(table(chickwts$feed, chickwts$cluster))
+```
+---
 
 ## Additional Resources
 

@@ -10,7 +10,7 @@ The `greenclust` package implements a method of grouping/clustering the categori
 
 It does this by iteratively collapsing the rows two at a time, similar to other agglomerative hierarchical clustering methods. At each step, it selects the pair of rows whose combination results in a new table with the smallest loss of chi-squared. This process is often refered to "Greenacre's Method", particularly in the SAS community, after statistician Michael J. Greenacre.
 
-The returned object is an extended version of the [`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html) object used in the [`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html) package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting and diagnostic plotting.
+The returned object is an extended version of the [`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html) object used in the [`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html) package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting, diagnostic plotting, and assigning derived clusters back to the source data.
 
 Installation
 ------------
@@ -69,11 +69,13 @@ plot(grc)
 
 ![](man/figures/README-example_clusterplot_1-1.png)
 
-The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost at each given clustering node.
+The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost when the two categories are combined at each clustering step.
 
 ### Other Functions
 
-The package provides a special plotting function, `greenplot()`, that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful aid in weighing the trade-off between fewer clusters and lower r-squared:
+#### greenplot
+
+The package provides a diagnostic plotting function that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful tool when weighing the trade-off between fewer clusters and lower r-squared:
 
 ``` r
 greenplot(grc)
@@ -83,7 +85,9 @@ greenplot(grc)
 
 When using this method, the customary "optimal" number of groups is found at most-significant chi-squared test (i.e., lowest p-value). This point is automatically highlighted by `greenplot()`.
 
-The `greencut()` function is essentially a version of `cutree()` that cuts a greenclust tree at this optimal level by default:
+#### greencut
+
+`greencut()` is essentially a version of `cutree()` that cuts a greenclust tree at the optimal level (mentioned above) by default:
 
 ``` r
 greencut(grc)
@@ -119,59 +123,54 @@ greencut(grc, k=3)
 ## [1] 1.208027e-134
 ```
 
+#### assign.cluster
+
+After clustering, you'll typically want to associate the resulting cluster numbers back to the original data. For example, if we clustered the feed supplements of the [chickwts](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html) data based on the number of "underweight" chicks and then cut the tree, the resulting vector would have an element for each unique category level, rather than an element for each actual observation:
+
+``` r
+chick.table <- table(chickwts$feed,
+                     ifelse(chickwts$weight < 200, "Y", "N"))
+chick.tree <- greenclust(chick.table)
+# Use the default cut point
+chick.clusters <- greencut(chick.tree)
+
+# The resulting six-element vector shows the cluster number for each level
+chick.clusters
+##    casein horsebean   linseed  meatmeal   soybean sunflower 
+##         1         2         3         1         3         1 
+## attr(,"r.squared")
+## [1] 0.9842772
+## attr(,"p.value")
+## [1] 1.790278e-06
+```
+
+`assign.cluster()` is a simple convenience function for expanding those cluster numbers back out:
+
+``` r
+chickwts$cluster <- assign.cluster(chickwts$feed, chick.clusters)
+
+# Sample of data with new cluster numbers
+chickwts[46:50,]
+##    weight      feed cluster
+## 46    322 sunflower       1
+## 47    297 sunflower       1
+## 48    318 sunflower       1
+## 49    325  meatmeal       1
+## 50    257  meatmeal       1
+
+# Counts by original level and new cluster
+print(table(chickwts$feed, chickwts$cluster))
+##            
+##              1  2  3
+##   casein    12  0  0
+##   horsebean  0 10  0
+##   linseed    0  0 12
+##   meatmeal  11  0  0
+##   soybean    0  0 14
+##   sunflower 12  0  0
+```
+
 ------------------------------------------------------------------------
-
-Putting it all together:
-
-``` r
-clusters <- greencut(grc)
-
-plot(grc)
-rect.hclust(grc, max(clusters), border=unique(clusters)+1)
-```
-
-![](man/figures/README-example_clusterplot2-1.png)
-
-``` r
-
-# Categories by cluster number
-cbind(clusters, tab)[order(clusters, rownames(tab)), ]
-##                   clusters  No Yes
-## Adult.Female.1st         1   4 140
-## Adult.Female.2nd         1  13  80
-## Adult.Female.Crew        1   3  20
-## Child.Female.1st         1   0   1
-## Child.Female.2nd         1   0  13
-## Child.Male.1st           1   0   5
-## Child.Male.2nd           1   0  11
-## Adult.Male.1st           2 118  57
-## Adult.Male.2nd           3 154  14
-## Adult.Male.3rd           3 387  75
-## Adult.Male.Crew          4 670 192
-## Child.Male.3rd           4  35  13
-## Adult.Female.3rd         5  89  76
-## Child.Female.3rd         5  17  14
-
-# Create collapsed contingency table
-new.tab <- aggregate(tab, by=list(clusters), FUN=sum)[ , 2:3]
-rownames(new.tab) <- paste0("clust", unique(clusters))
-new.tab
-##         No Yes
-## clust1  20 270
-## clust2 118  57
-## clust3 541  89
-## clust4 705 205
-## clust5 106  90
-
-# New table still shows clear differences in survival rates
-round(prop.table(as.matrix(new.tab), 1), 3)
-##           No   Yes
-## clust1 0.069 0.931
-## clust2 0.674 0.326
-## clust3 0.859 0.141
-## clust4 0.775 0.225
-## clust5 0.541 0.459
-```
 
 Additional Resources
 --------------------

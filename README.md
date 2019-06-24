@@ -150,15 +150,15 @@ chick.clusters
 chickwts$cluster <- assign.cluster(chickwts$feed, chick.clusters)
 
 # Sample of data with new cluster numbers
-chickwts[46:50,]
+chickwts[9:13, ]
 ##    weight      feed cluster
-## 46    322 sunflower       1
-## 47    297 sunflower       1
-## 48    318 sunflower       1
-## 49    325  meatmeal       1
-## 50    257  meatmeal       1
+## 9     143 horsebean       2
+## 10    140 horsebean       2
+## 11    309   linseed       3
+## 12    229   linseed       3
+## 13    181   linseed       3
 
-# Counts by original level and new cluster
+# Observation counts by original level and new cluster
 print(table(chickwts$feed, chickwts$cluster))
 ##            
 ##              1  2  3

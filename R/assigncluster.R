@@ -35,7 +35,8 @@
 #'   is not found in \code{names(clusters)} (see Details).
 #' @return A factor vector of the same length as \code{x}, representing
 #'   assigned cluster numbers.
-#' @seealso \code{\link{greenclust}}, \code{\link{greencut}}, \code{\link{greenplot}}
+#' @seealso \code{\link{greenclust}}, \code{\link{greencut}},
+#'     \code{\link{greenplot}}
 #' @examples
 #' # Cluster feed types based on number of "underweight" chicks
 #' grc <- greenclust(table(chickwts$feed,

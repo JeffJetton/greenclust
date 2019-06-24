@@ -55,5 +55,6 @@ Greenacre, M.J. (1988) "Clustering the Rows and Columns of
   \url{https://doi.org/10.1007/BF01901670}
 }
 \seealso{
-\code{\link{greenclust}}, \code{\link{greenplot}}, \code{\link{assign.cluster}}
+\code{\link{greenclust}}, \code{\link{greenplot}},
+    \code{\link{assign.cluster}}
 }

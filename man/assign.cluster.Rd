@@ -46,5 +46,6 @@ feed.clustered <- assign.cluster(chickwts$feed, greencut(grc))
 table(chickwts$feed, feed.clustered)
 }
 \seealso{
-\code{\link{greenclust}}, \code{\link{greencut}}, \code{\link{greenplot}}
+\code{\link{greenclust}}, \code{\link{greencut}},
+    \code{\link{greenplot}}
 }

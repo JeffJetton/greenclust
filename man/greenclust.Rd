@@ -18,10 +18,11 @@ p-value at each step}
 \value{
 An object of class \code{greenclust} which is compatible with most
   \code{\link{hclust}} object functions, such as \code{\link{plot}()} and
-  \code{\link{rect.hclust}()}. The "heights" are r-squared values at each
-  clustering step. The greenclust object also includes a vector for the
-  p.value of the chi-squared test at each step and a boolean vector
-  indicating whether or not a step had a tie for "winner".
+  \code{\link{rect.hclust}()}. The height vector, in this case, represents
+  the reduction in r-squared seen at each clustering step. The greenclust
+  object also includes a vector for the chi-squared test p-value at each
+  step and a boolean vector indicating whether the step had a tie for
+  "winner".
 }
 \description{
 Iteratively collapses the rows of a table (typically a contingency table)
@@ -54,5 +55,6 @@ Greenacre, M.J. (1988) "Clustering the Rows and Columns of
   \url{https://doi.org/10.1007/BF01901670}
 }
 \seealso{
-\code{\link{greencut}}, \code{\link{greenplot}}, \code{\link{assign.cluster}}
+\code{\link{greencut}}, \code{\link{greenplot}},
+    \code{\link{assign.cluster}}
 }

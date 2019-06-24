@@ -23,19 +23,19 @@ test_that(".combine.rows returns a matrix with a correctly-combined row", {
 
 test_that(".print.step returns correct cluster step information", {
     rownames(m)[3] <- -2
-    expect_output(greenclust:::.print.step(m, c("Whiskey", "X-Ray", "Yankee", "Zulu"),
+    expect_output(greenclust:::.print.step(m, c("Whiskey", "XRay", "Yankee", "Zulu"),
                                   99,TRUE, 0.424242, 0.8675309, 2.0),
                   "^Step.*99.*tie")
-    expect_output(greenclust:::.print.step(m, c("Whiskey", "X-Ray", "Yankee", "Zulu"),
+    expect_output(greenclust:::.print.step(m, c("Whiskey", "XRay", "Yankee", "Zulu"),
                                            99,TRUE, 0.424242, 0.8675309, 2.0),
-                  "X-Ray", fixed=TRUE)
-    expect_output(greenclust:::.print.step(m, c("Whiskey", "X-Ray", "Yankee", "Zulu"),
+                  "XRay", fixed=TRUE)
+    expect_output(greenclust:::.print.step(m, c("Whiskey", "XRay", "Yankee", "Zulu"),
                                            99,TRUE, 0.424242, 0.8675309, 2.0),
                   "Chi-squared: 0.4", fixed=TRUE)
-    expect_output(greenclust:::.print.step(m, c("Whiskey", "X-Ray", "Yankee", "Zulu"),
+    expect_output(greenclust:::.print.step(m, c("Whiskey", "XRay", "Yankee", "Zulu"),
                                            99,TRUE, 0.424242, 0.8675309, 2.0),
                   "p-value: 0.8", fixed=TRUE)
-    expect_output(greenclust:::.print.step(m, c("Whiskey", "X-Ray", "Yankee", "Zulu"),
+    expect_output(greenclust:::.print.step(m, c("Whiskey", "XRay", "Yankee", "Zulu"),
                                            99,TRUE, 0.424242, 0.8675309, 2.0),
                   "R-squared: 0.2", fixed=TRUE)
 })

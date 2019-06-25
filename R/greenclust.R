@@ -45,11 +45,11 @@
 .print.step <- function(x, orig.names, n, tie.flag, chisq, p, initial.chi) {
     # Translate negative row names to original text and append
     # non-negative row names with "Cluster "
-    temp <- x
-    rnames <- rownames(temp)
-    rnames[rnames < 0] <- orig.names[-as.numeric(rnames[rnames < 0])]
-    rnames[rownames(temp) > 0] <- paste("Cluster", rnames[rownames(temp) > 0])
-    rownames(temp) <- rnames
+    rnames <- rownames(x)
+    name.is.neg <- as.numeric(rnames) < 0
+    rnames[name.is.neg] <- orig.names[-as.numeric(rnames[name.is.neg])]
+    rnames[!name.is.neg] <- paste("Cluster", rnames[!name.is.neg])
+    rownames(x) <- rnames
     # Display step information
     cat(paste("Step:", n))
     if (tie.flag) {
@@ -57,7 +57,7 @@
     } else {
         cat("\n")
     }
-    print(temp)
+    print(x)
     cat(paste("\nChi-squared:", round(chisq, 2), "\n"))
     cat(paste("p-value:", signif(p, 4), "\n"))
     cat(paste("R-squared:", round(chisq/initial.chi, 4), "\n\n\n"))

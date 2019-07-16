@@ -1,11 +1,8 @@
 ## Resubmission
-This is a resubmission. I have made these requested fixes to the DESCRIPTION file's Description field:
+This is a resubmission. I have made these requested fix to the DESCRIPTION file's Description field:
 
-* Added single quotes around package and function names
-* Added parentheses to the end of the function name `hclust()`
-* Included a citation, using author name, year, and doi
+* Removed the single quotes around the function name `hclust()`
 
-I have also taken advantage of the resubmit to add URL and BugReports fields to the DESCRIPTION file.
   
 ## Test environments
 * OS X local install: R 3.6.0

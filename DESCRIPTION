@@ -8,7 +8,7 @@ Description: Implements a method of iteratively collapsing the rows of a
     combination yields a new table with the smallest loss of chi-squared, as
     described by Greenacre, M.J. (1988) <doi:10.1007/BF01901670>. The result is
     compatible with the class of object returned by the 'stats' package's
-    'hclust()' function and can be used similarly (plotted as a dendrogram,
+    hclust() function and can be used similarly (plotted as a dendrogram,
     cut, etc.). Additional functions are provided for automatic cutting and
     diagnostic plotting.
 License: MIT + file LICENSE

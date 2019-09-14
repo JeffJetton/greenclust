@@ -1,31 +1,59 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-greenclust
-==========
 
-Overview
---------
+# greenclust
 
-The `greenclust` package implements a method of grouping/clustering the categories of a contingency table in a way that preserves as much of the original variance as possible. It is well-suited for reducing the number of levels of a categorical feature in logistic regression (or any other model having a categorical outcome), while still maintaining some degree of explanatory power.
+![Count of CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/greenclust)
 
-It does this by iteratively collapsing the rows two at a time, similar to other agglomerative hierarchical clustering methods. At each step, it selects the pair of rows whose combination results in a new table with the smallest loss of chi-squared. This process is often refered to "Greenacre's Method", particularly in the SAS community, after statistician Michael J. Greenacre.
+## Overview
 
-The returned object is an extended version of the [`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html) object used in the [`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html) package and can be used similarly (plotted as a dendrogram, cut, etc.). Additional functions are provided in the package for automatic cutting, diagnostic plotting, and assigning derived clusters back to the source data.
+The `greenclust` package implements a method of grouping/clustering the
+categories of a contingency table in a way that preserves as much of the
+original variance as possible. It is well-suited for reducing the number
+of levels of a categorical feature in logistic regression (or any other
+model having a categorical outcome), while still maintaining some degree
+of explanatory power.
 
-Installation
-------------
+It does this by iteratively collapsing the rows two at a time, similar
+to other agglomerative hierarchical clustering methods. At each step, it
+selects the pair of rows whose combination results in a new table with
+the smallest loss of chi-squared. This process is often refered to
+“Greenacre’s Method”, particularly in the SAS community, after
+statistician Michael J. Greenacre.
 
-You can install the current version of `greenclust` directly from this GitHub repository using the [devtools package](https://www.rstudio.com/products/rpackages/devtools/):
+The returned object is an extended version of the
+[`hclust`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html)
+object used in the
+[`stats`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/stats-package.html)
+package and can be used similarly (plotted as a dendrogram, cut, etc.).
+Additional functions are provided in the package for automatic cutting,
+diagnostic plotting, and assigning derived clusters back to the source
+data.
+
+## Installation
+
+The latest “official release” of `greenclust` is now available on CRAN
+and can be installed like any regular R package. Or you can install
+directly from this GitHub repository using the [devtools
+package](https://www.rstudio.com/products/rpackages/devtools/):
 
 ``` r
+# Install from CRAN
+install.packages("greenclust")
+
+# Install from github
 # install.packages("devtools")
 devtools::install_github("jeffjetton/greenclust")
 ```
 
-Examples
---------
+## Examples
 
-The `greenclust()` function works like `hclust()`, only it accepts a contingency table rather than a dissimilarity matrix. For the purposes of this example, we'll merge the categorical features of the [Titanic](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/Titanic.html) data set into a single, monolithic category.
+The `greenclust()` function works like `hclust()`, only it accepts a
+contingency table rather than a dissimilarity matrix. For the purposes
+of this example, we’ll merge the categorical features of the
+[Titanic](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/Titanic.html)
+data set into a single, monolithic category.
 
 ``` r
 # Combine Titanic passenger attributes into a single category
@@ -35,7 +63,8 @@ tab <- t(as.data.frame(apply(Titanic, 4:1, FUN=sum)))
 tab <- tab[apply(tab, 1, sum) > 0, ]
 ```
 
-This gives us a contingency table with several levels, showing the total number of passengers who survived (or not) at each level:
+This gives us a contingency table with several levels, showing the total
+number of passengers who survived (or not) at each level:
 
     ##                    No Yes
     ## Child.Male.1st      0   5
@@ -67,27 +96,36 @@ grc <- greenclust(tab)
 plot(grc)
 ```
 
-![](man/figures/README-example_clusterplot_1-1.png)
+![](man/figures/README-example_clusterplot_1-1.png)<!-- -->
 
-The "height" in this case is the reduction in r-squared. That is, the proportion of chi-squared, relative to the original uncollapsed table, that is lost when the two categories are combined at each clustering step.
+The “height” in this case is the reduction in r-squared. That is, the
+proportion of chi-squared, relative to the original uncollapsed table,
+that is lost when the two categories are combined at each clustering
+step.
 
 ### Other Functions
 
 #### greenplot
 
-The package provides a diagnostic plotting function that shows the r-squared and chi-squared test p-value for each potential number of groups/clusters. This can be a useful tool when weighing the trade-off between fewer clusters and lower r-squared:
+The package provides a diagnostic plotting function that shows the
+r-squared and chi-squared test p-value for each potential number of
+groups/clusters. This can be a useful tool when weighing the trade-off
+between fewer clusters and lower r-squared:
 
 ``` r
 greenplot(grc)
 ```
 
-![](man/figures/README-example_greenplot-1.png)
+![](man/figures/README-example_greenplot-1.png)<!-- -->
 
-When using this method, the customary "optimal" number of groups is found at most-significant chi-squared test (i.e., lowest p-value). This point is automatically highlighted by `greenplot()`.
+When using this method, the customary “optimal” number of groups is
+found at most-significant chi-squared test (i.e., lowest p-value). This
+point is automatically highlighted by `greenplot()`.
 
 #### greencut
 
-`greencut()` is essentially a version of `cutree()` that cuts a greenclust tree at the optimal level (mentioned above) by default:
+`greencut()` is essentially a version of `cutree()` that cuts a
+greenclust tree at the optimal level (mentioned above) by default:
 
 ``` r
 greencut(grc)
@@ -105,7 +143,11 @@ greencut(grc)
 ## [1] 1.398205e-137
 ```
 
-Note that `greencut()` also includes the r-squared and p-value for that particular clustering level as vector attributes. If you want a different cut point, but would still like to have these attributes, you can override automatic selection by specifying either `k` (number of clusters) or `h` (height, or 1 - r-squared):
+Note that `greencut()` also includes the r-squared and p-value for that
+particular clustering level as vector attributes. If you want a
+different cut point, but would still like to have these attributes, you
+can override automatic selection by specifying either `k` (number of
+clusters) or `h` (height, or 1 - r-squared):
 
 ``` r
 greencut(grc, k=3)
@@ -125,7 +167,13 @@ greencut(grc, k=3)
 
 #### assign.cluster
 
-After clustering, you'll typically want to associate the resulting cluster numbers back to the original data. For example, if we clustered the feed supplements of the [chickwts](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html) data based on the number of "underweight" chicks and then cut the tree, the resulting vector would have an element for each unique category level, rather than an element for each actual observation:
+After clustering, you’ll typically want to associate the resulting
+cluster numbers back to the original data. For example, if we clustered
+the feed supplements of the
+[chickwts](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/chickwts.html)
+data based on the number of “underweight” chicks and then cut the tree,
+the resulting vector would have an element for each unique category
+level, rather than an element for each actual observation:
 
 ``` r
 chick.table <- table(chickwts$feed,
@@ -144,7 +192,8 @@ chick.clusters
 ## [1] 1.790278e-06
 ```
 
-`assign.cluster()` is a simple convenience function for expanding those cluster numbers back out:
+`assign.cluster()` is a simple convenience function for expanding those
+cluster numbers back out:
 
 ``` r
 chickwts$cluster <- assign.cluster(chickwts$feed, chick.clusters)
@@ -170,10 +219,13 @@ print(table(chickwts$feed, chickwts$cluster))
 ##   sunflower 12  0  0
 ```
 
-------------------------------------------------------------------------
+-----
 
-Additional Resources
---------------------
+## Additional Resources
 
--   Michael J. Greenacre: [Clustering the Rows and Columns of a Contingency Table](https://doi.org/10.1007/BF01901670)
--   Xinghe Lu: [Correcting the Quasi-complete Separation Issue in Logistic Regression Models](https://pdfs.semanticscholar.org/bbb0/2b26cf6a1628b27ddef70a83b92962d6dce2.pdf) (pdf)
+  - Michael J. Greenacre: [Clustering the Rows and Columns of a
+    Contingency Table](https://doi.org/10.1007/BF01901670)
+  - Xinghe Lu: [Correcting the Quasi-complete Separation Issue in
+    Logistic Regression
+    Models](https://pdfs.semanticscholar.org/bbb0/2b26cf6a1628b27ddef70a83b92962d6dce2.pdf)
+    (pdf)

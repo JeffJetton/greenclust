@@ -82,5 +82,15 @@ test_that("greenclust gives expected results on a test matrix", {
     expect_equal(round(sum(g$height) * 100), 183)
 })
 
+test_that("greenclust gives expected results when being passed a data frame", {
+    df <- as.data.frame(m)
+    g <- greenclust(df)
+    expect_equal(g$order, c(1, 4, 7, 10, 13, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15))
+    expect_equal(g$merge[1, ], c(-14, -15))
+    expect_equal(g$merge[14, ], c(12, 13))
+    expect_equal(sum(g$tie), 4)
+    expect_equal(round(min(log(g$p.values))), -59)
+    expect_equal(round(sum(g$height) * 100), 183)
+})
 
 

@@ -56,6 +56,7 @@
 #'
 #' @export
 #' @importFrom stats chisq.test as.dendrogram order.dendrogram
+#'             aggregate cutree pchisq
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
     #######################################

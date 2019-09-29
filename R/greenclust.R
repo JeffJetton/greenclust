@@ -228,10 +228,9 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         if (verbose && cluster.number < (n - 1)) {
             # The new clusters should be named if we're going to show them
             rownames(x)[new.row.index] <- paste("Cluster", cluster.number)
-            .print.step.new(x[active.rows, ], cluster.number,
-                            rownames(x)[rows.to.combine], tie.flag,
-                            running.chi, p.values[cluster.number],
-                            initial.chi)
+            .print.step(x[active.rows, ], cluster.number,
+                        rownames(x)[rows.to.combine], tie.flag, running.chi,
+                        p.values[cluster.number], initial.chi)
         }
 
     }  # End of cluster loop:  for (cluster.number in 1:(n-1)) {

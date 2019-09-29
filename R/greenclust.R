@@ -58,6 +58,36 @@
 #' @importFrom stats chisq.test as.dendrogram order.dendrogram
 greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
+    #######################################
+    #   Validation Checks and Data Prep   #
+    #######################################
+
+    # Check for valid arguments
+    if (anyNA(x) || is.null(x) || !(is.matrix(x) || is.data.frame(x)))
+        stop("x must be a non-null matrix or data frame")
+    # If x is a dataframe, convert to matrix
+    if (is.data.frame(x)) {
+        x = as.matrix(x)
+    }
+    if (!is.numeric(x) || sum(is.nan(x)) != 0)
+        stop("x must be numeric")
+    if (any(x < 0) || sum(is.infinite(x)) != 0)
+        stop("all elements must be nonnegative and finite")
+    if (nrow(x) < 3)
+        stop("x should have at least 3 rows")
+    if (ncol(x) < 2)
+        stop("x should have at least 2 columns")
+    if(sum(apply(x, 1, sum)==0) > 0)
+        stop("all row totals must be greater than zero")
+    if(sum(apply(x, 2, sum)==0) > 0)
+        stop("all column totals must be greater than zero")
+
+    # If there are no row names, give them names
+    if (is.null(rownames(x))) {
+        rownames(x) <- 1:nrow(x)
+    }
+
+
     ################################
     #   Preliminary calculations   #
     ################################

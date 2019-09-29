@@ -26,8 +26,8 @@ An object of class \code{greenclust} which is compatible with most
 }
 \description{
 Iteratively collapses the rows of a table (typically a contingency table)
-by selecting the pair of rows each time whose combination results in a
-new table with the smallest loss of chi-squared.
+by selecting the pair of rows each time whose combination creates the
+smalled loss of chi-squared.
 }
 \examples{
 # Combine Titanic passenger attributes into a single category

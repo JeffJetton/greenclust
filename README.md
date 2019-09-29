@@ -34,15 +34,16 @@ data.
 ## Installation
 
 The latest “official release” of `greenclust` is now available on CRAN
-and can be installed like any regular R package. Or you can install
-directly from this GitHub repository using the [devtools
+and can be installed like any regular R package. Or you can install the
+latest development version from this GitHub repository using the
+[devtools
 package](https://www.rstudio.com/products/rpackages/devtools/):
 
 ``` r
 # Install from CRAN
 install.packages("greenclust")
 
-# Install from github
+# Install newest version (potentially still in development) from github
 # install.packages("devtools")
 devtools::install_github("jeffjetton/greenclust")
 ```

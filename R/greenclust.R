@@ -205,7 +205,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         running.chi <- running.chi - lowest.reduction
 
         # Reduce degrees of freedom
-        df <- df - 1
+        df <- df - (ncol(x) - 1)
 
         # Remove reductions that refer to the old (now non-active) rows
         # (A bit verbose, but slightly faster than using %in%, etc.)

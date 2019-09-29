@@ -51,14 +51,13 @@ test_that("greenclust returns a valid greenclust/hclust object", {
     expect_is(g, "greenclust")
     expect_is(g, "hclust")
     expect_output(str(g), "List of 8")
-    expect_output(str(g), "$ height     : num [1:", fixed=TRUE)
-    expect_output(str(g), "$ order      : num [1:", fixed=TRUE)
-    expect_output(str(g), "$ labels     : chr [1:", fixed=TRUE)
-    expect_output(str(g), "$ call       : language greenclust(x = m)",
-                  fixed=TRUE)
-    expect_output(str(g), "$ dist.method: chr", fixed=TRUE)
-    expect_output(str(g), "$ p.values   : num [1:", fixed=TRUE)
-    expect_output(str(g), "$ tie        : logi [1:", fixed=TRUE)
+    expect_output(str(g), "\\$ height +: num \\[1\\:")
+    expect_output(str(g), "\\$ order +: int \\[1\\:")
+    expect_output(str(g), "\\$ labels +: chr \\[1\\:")
+    expect_output(str(g), "\\$ call +: language greenclust\\(x = m\\)")
+    expect_output(str(g), "\\$ dist.method: chr")
+    expect_output(str(g), "\\$ p.values +: num \\[1\\:")
+    expect_output(str(g), "\\$ tie +: logi \\[1\\:")
     expect_equal(ncol(g$merge), 2)
     expect_equal(length(g$height), length(g$tie))
     expect_equal(length(g$order), length(g$labels))
@@ -67,17 +66,20 @@ test_that("greenclust returns a valid greenclust/hclust object", {
 
 test_that("greenclust works when verbose=TRUE", {
     expect_output(greenclust(matrix(1:6, ncol=2), verbose=TRUE),
-                  "Step: 1", fixed=TRUE)
+                  "Step 1\\:")
     expect_output(greenclust(matrix(1:6, ncol=2), verbose=TRUE),
                   "Cluster 1")
 })
 
 test_that("greenclust gives expected results on a test matrix", {
     g <- greenclust(m)
-    expect_equal(g$order, c(1, 4, 7, 10, 13, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15))
-    expect_equal(g$merge[1, ], c(-14, -15))
-    expect_equal(g$merge[14, ], c(12, 13))
-    expect_equal(sum(g$tie), 4)
+    expect_equal(length(unique(g$order)), nrow(m))
+    expect_equal(min(g$order), 1)
+    expect_equal(max(g$order), nrow(m))
+    # We don't really care about the order of the merged rows...
+    expect_equal(g$merge[1, ] %in% c(-14, -15), c(TRUE, TRUE))
+    expect_equal(g$merge[14, ] %in% c(12, 13), c(TRUE, TRUE))
+    expect_equal(sum(g$tie), 1)
     expect_equal(round(min(log(g$p.values))), -59)
     expect_equal(round(sum(g$height) * 100), 183)
 })
@@ -85,12 +87,22 @@ test_that("greenclust gives expected results on a test matrix", {
 test_that("greenclust gives expected results when being passed a data frame", {
     df <- as.data.frame(m)
     g <- greenclust(df)
-    expect_equal(g$order, c(1, 4, 7, 10, 13, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15))
-    expect_equal(g$merge[1, ], c(-14, -15))
-    expect_equal(g$merge[14, ], c(12, 13))
-    expect_equal(sum(g$tie), 4)
+    expect_equal(length(unique(g$order)), nrow(df))
+    expect_equal(min(g$order), 1)
+    expect_equal(max(g$order), nrow(df))
+    # We don't really care about the order of the merged rows...
+    expect_equal(g$merge[1, ] %in% c(-14, -15), c(TRUE, TRUE))
+    expect_equal(g$merge[14, ] %in% c(12, 13), c(TRUE, TRUE))
+    expect_equal(sum(g$tie), 1)
     expect_equal(round(min(log(g$p.values))), -59)
     expect_equal(round(sum(g$height) * 100), 183)
 })
 
-
+test_that("greenclust correctly handles Yates's correction", {
+    m2 <- matrix(c(10, 10, 90, 40, 20, 20), nrow=3)
+    g <- greenclust(m2, correct=TRUE)
+    # This is what the table should be once it gets to 2x2...
+    m3 <- matrix(c(90, 20, 20, 60), nrow=2)
+    suppressWarnings(p <- chisq.test(m3)$p.value)
+    expect_equal(g$p.values, p)
+})

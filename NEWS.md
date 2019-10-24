@@ -1,4 +1,4 @@
-# greenclust (development version)
+# greenclust 1.1
 
 * The core clustering code has been completely re-written and is now far more efficient.
     * Clustering is typically about ten times faster now.

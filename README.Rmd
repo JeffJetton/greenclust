@@ -25,7 +25,7 @@ The returned object is an extended version of the [`hclust`](https://stat.ethz.c
 
 ## Installation
 
-The latest "official release" of `greenclust` is now available on CRAN and can be installed like any regular R package. Or you can install the latest development version from this GitHub repository using the [devtools package](https://builder.r-hub.io/status/greenclust_1.1.0.tar.gz-8c0dc2cd188b4e2e862e5e1b5dacc097):
+The latest "official release" of `greenclust` is now available on CRAN and can be installed like any regular R package. Or you can install the latest development version from this GitHub repository using the [devtools package](https://CRAN.R-project.org/package=devtools):
 
 ``` r
 # Install from CRAN

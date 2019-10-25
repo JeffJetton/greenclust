@@ -37,7 +37,7 @@ The latest “official release” of `greenclust` is now available on CRAN
 and can be installed like any regular R package. Or you can install the
 latest development version from this GitHub repository using the
 [devtools
-package](https://www.rstudio.com/products/rpackages/devtools/):
+package](https://builder.r-hub.io/status/greenclust_1.1.0.tar.gz-8c0dc2cd188b4e2e862e5e1b5dacc097):
 
 ``` r
 # Install from CRAN

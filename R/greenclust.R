@@ -128,7 +128,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     tie <- vector()
 
     # Create a data.frame to store the chi "reduction" calculations, i.e.,
-    # the amount by which the table's orver chi statistic would drop for
+    # the amount by which the table's overall chi statistic would drop for
     # every potential two-row combination left to consider
     reductions <- data.frame(i=vector("integer"),
                              j=vector("integer"),
@@ -235,6 +235,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         }
 
         # Add the new cluster row's index to active.rows
+# TODO: Put new index in place of original first row instead of at end
         active.rows <- c(active.rows, new.row.index)
 
         # Add info on winning clustering to the merge matrix

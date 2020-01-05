@@ -76,9 +76,9 @@ test_that("greenclust gives expected results on a test matrix", {
     expect_equal(length(unique(g$order)), nrow(m))
     expect_equal(min(g$order), 1)
     expect_equal(max(g$order), nrow(m))
-    # We don't really care about the order of the merged rows...
+    # Check first and last merge steps (row order doesn't matter)
     expect_equal(g$merge[1, ] %in% c(-14, -15), c(TRUE, TRUE))
-    expect_equal(g$merge[14, ] %in% c(12, 13), c(TRUE, TRUE))
+    expect_equal(g$merge[nrow(m)-1, ] %in% c(12, 13), c(TRUE, TRUE))
     expect_equal(sum(g$tie), 1)
     expect_equal(round(min(log(g$p.values))), -59)
     expect_equal(round(sum(g$height) * 100), 183)

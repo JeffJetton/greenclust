@@ -6,6 +6,9 @@ m <- matrix(c(1:15, rep(c(0, 20, 25), 5), 45:31), ncol=3)
 colnames(m) <- c("yes", "no", "unknown")
 rownames(m) <- state.name[seq(3, by=3, length.out=nrow(m))]
 
+# More basic matrix (with one obvious tie during the first step)
+m2 <- matrix(c(50, 50, 50, 50, 25, 10, 0, 0, 0, 50, 30, 45), ncol=2)
+
 
 test_that("greenclust stops when x has dimensions less than 3x2", {
     expect_error(greenclust(matrix(c(4, 8), nrow=1)), "rows")
@@ -72,37 +75,35 @@ test_that("greenclust works when verbose=TRUE", {
 })
 
 test_that("greenclust gives expected results on a test matrix", {
-    g <- greenclust(m)
-    expect_equal(length(unique(g$order)), nrow(m))
+    g <- greenclust(m2)
+    expect_equal(length(unique(g$order)), nrow(m2))
     expect_equal(min(g$order), 1)
-    expect_equal(max(g$order), nrow(m))
+    expect_equal(max(g$order), nrow(m2))
     # Check first and last merge steps (row order doesn't matter)
-    expect_equal(g$merge[1, ] %in% c(-14, -15), c(TRUE, TRUE))
-    expect_equal(g$merge[nrow(m)-1, ] %in% c(12, 13), c(TRUE, TRUE))
+    expect_equal(g$merge[1, ] %in% c(-1, -2), c(TRUE, TRUE))
+    expect_equal(g$merge[nrow(m2)-1, ] %in% c(4, 2), c(TRUE, TRUE))
     expect_equal(sum(g$tie), 1)
-    expect_equal(round(min(log(g$p.values))), -59)
-    expect_equal(round(sum(g$height) * 100), 183)
+    expect_equal(round(min(log(g$p.values))), -77)
+    expect_equal(round(sum(g$height) * 100), 111)
 })
 
 test_that("greenclust gives expected results when being passed a data frame", {
-    df <- as.data.frame(m)
+    df <- as.data.frame(m2)
     g <- greenclust(df)
     expect_equal(length(unique(g$order)), nrow(df))
     expect_equal(min(g$order), 1)
     expect_equal(max(g$order), nrow(df))
-    # We don't really care about the order of the merged rows...
-    expect_equal(g$merge[1, ] %in% c(-14, -15), c(TRUE, TRUE))
-    expect_equal(g$merge[14, ] %in% c(12, 13), c(TRUE, TRUE))
+    expect_equal(g$merge[1, ] %in% c(-1, -2), c(TRUE, TRUE))
+    expect_equal(g$merge[nrow(df)-1, ] %in% c(4, 2), c(TRUE, TRUE))
     expect_equal(sum(g$tie), 1)
-    expect_equal(round(min(log(g$p.values))), -59)
-    expect_equal(round(sum(g$height) * 100), 183)
+    expect_equal(round(min(log(g$p.values))), -77)
+    expect_equal(round(sum(g$height) * 100), 111)
 })
 
 test_that("greenclust correctly handles Yates's correction", {
-    m2 <- matrix(c(10, 10, 90, 40, 20, 20), nrow=3)
     g <- greenclust(m2, correct=TRUE)
     # This is what the table should be once it gets to 2x2...
-    m3 <- matrix(c(90, 20, 20, 60), nrow=2)
-    suppressWarnings(p <- chisq.test(m3)$p.value)
-    expect_equal(g$p.values, p)
+    m3 <- matrix(c(150, 85, 0, 125), nrow=2)
+    suppressWarnings(p <- chisq.test(m3, correct=TRUE)$p.value)
+    expect_equal(log(g$p.values[length(g$p.values)]), log(p))
 })

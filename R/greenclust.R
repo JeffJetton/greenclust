@@ -93,6 +93,9 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     #   Preliminary calculations   #
     ################################
 
+    # Make a copy of the original matrix (used at the end if correct=TRUE).
+    original.x <- x
+
     # Pre-calculate the column totals and overall table total
     # These will never change, so we just have to do this once
     column.totals <- apply(x, MARGIN=2, FUN=sum)
@@ -126,6 +129,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     heights <- vector()
     p.values <- vector()
     tie <- vector()
+
+    # For the merge matrix, we'll need to keep track of which rows are still
+    # "original" (unmerged) and which are from a previous clustering step.
+    # (See `hclust` docs for details on the merge component of the object.)
+    merge.indices <- -(1:n)
 
     # Create a data.frame to store the chi "reduction" calculations, i.e.,
     # the amount by which the table's overall chi statistic would drop for
@@ -169,9 +177,18 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         # Get the current-lowest chi reduction value
         lowest.reduction <- min(reductions$reduction)
 
+        # Get the rows combinations that result in that reduction value
+        winners <- reductions[reductions$reduction==lowest.reduction, ]
+
         # Do we have more than one with that lowest reduction?
         tie.flag <- nrow(reductions[reductions$reduction==lowest.reduction,
                                     ]) > 1
+        if (tie.flag) {
+            # Make sure the combos are sorted in row order before picking
+            # the "winner" (this isn't really necessary, technically, but
+            # it adds a nice consistency to the clustering)
+            reductions <- reductions[order(reductions$i, reductions$j),]
+        }
         # Winner is the first combo with the lowest reduction
         index.of.winning.reduction <- match(lowest.reduction,
                                             reductions$reduction)
@@ -180,27 +197,27 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         # We don't literally combine the two rows in our dataset, yielding a
         # new dataset with one fewer row (like version 1.0 did), since that
         # would throw off all of the row references in our pre-calcuated data.
-        # Instead we create the combination as a new row in matrix x, with a
-        # new chi value in row.chis.
-        # We don't delete the old rows, but instead effectively ignore them
-        # by deleting them from the active.rows vector and removing any row
-        # in reduction that references either one.
-        # Then we add new rows to reduction based on comparing our new,
-        # freshly-clustered row with all the remaining ones.
+        # Instead we replace the first of the two rows with the combo, then
+        # update the chi value in row.chis for that row.
+        # We don't delete the second row, but instead effectively ignore it
+        # by deleting its reference from the active.rows vector.
+        # Then we remove any row in reduction that references either of the
+        # two combined indices and add new rows based on comparing the new,
+        # freshly-clustered row with all the other ones.
 
-        # Combine the winning rows and add the result to the end of x
+        # Combine the winning rows and replace first winning row with result
         rows.to.combine <- c(reductions[index.of.winning.reduction, "i"],
                              reductions[index.of.winning.reduction, "j"])
         new.row <- x[rows.to.combine[1], ] + x[rows.to.combine[2], ]
-        x <- rbind(x, new.row)
-        new.row.index <- nrow(x)
+        new.row.index <- rows.to.combine[1]
+        x[new.row.index, ] <- new.row
 
-        # Remove the indices of the old rows from active.rows
-        active.rows <- active.rows[!(active.rows %in% rows.to.combine)]
+        # Remove the index of second winning row from active.rows
+        active.rows <- active.rows[active.rows != rows.to.combine[2]]
 
-        # Add the chi of our new row to row.chis
+        # Update row.chis to reflect combined row
         new.row.chi <- .calculate.row.chi(new.row, column.totals, table.total)
-        row.chis <- c(row.chis, new.row.chi)
+        row.chis[new.row.index] <- new.row.chi
 
         # Reduce the running overall chi by the winning reduction amount
         running.chi <- running.chi - lowest.reduction
@@ -208,7 +225,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         # Reduce degrees of freedom
         df <- df - (ncol(x) - 1)
 
-        # Remove reductions that refer to the old (now non-active) rows
+        # Remove reductions that refer to the two winning (pre-combined) rows
         # (A bit verbose, but slightly faster than using %in%, etc.)
         reductions <- reductions[reductions$i != rows.to.combine[1] &
                                      reductions$j != rows.to.combine[1] &
@@ -217,7 +234,8 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
         # Calculate chi reductions for the new row compared to each of
         # the other, older, active rows.
-        for (comp.row.index in active.rows) {
+        other.rows <- active.rows[active.rows != new.row.index]
+        for (comp.row.index in other.rows) {
             combined.row.chi <- .calculate.row.chi(new.row +
                                                        x[comp.row.index, ],
                                                    column.totals,
@@ -234,22 +252,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
                                 make.row.names=FALSE)
         }
 
-        # Add the new cluster row's index to active.rows
-# TODO: Put new index in place of original first row instead of at end
-        active.rows <- c(active.rows, new.row.index)
-
-        # Add info on winning clustering to the merge matrix
-        merge.matrix <- rbind(merge.matrix, rows.to.combine)
-        # Rows from original table should have a negative index.
-        # Clustered rows should start at 1. Adjust accordingly...
-        for (i in 1:2) {
-            if (rows.to.combine[i] > n) {
-                merge.matrix[cluster.number, i] <- rows.to.combine[i] - n
-            }
-            else {
-                merge.matrix[cluster.number, i] <- -rows.to.combine[i]
-            }
-        }
+        # Merge matrix: Add info on winning clustering. Use the indices
+        merge.matrix <- rbind(merge.matrix, merge.indices[rows.to.combine])
+        # Update merge.indices to reflect the fact that the new row is
+        # the result of a merge (clustering step)
+        merge.indices[new.row.index] <- cluster.number
 
         # Add info to the other cluster-step-tracking variables
         heights <- c(heights, (initial.chi - running.chi)/initial.chi)
@@ -303,7 +310,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     # will rarely ever be done.
     if (correct & ncol(x) == 2) {
         clusters <- cutree(grc, k=2)
-        clustered.table <- aggregate(x[1:n,], by=list(clusters), FUN=sum)[,-1]
+        clustered.table <- aggregate(original.x, by=list(clusters), FUN=sum)[,-1]
         suppressWarnings(chi <- chisq.test(clustered.table, correct=TRUE))
         grc$height[n-2] <- (1 - chi$statistic/initial.chi)
         grc$p.values[n-2] <- chi$p.value

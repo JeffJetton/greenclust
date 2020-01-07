@@ -45,8 +45,8 @@ test_that("greenclust stops when x has negative row or column sums", {
 })
 
 test_that("greenclust creates rownames when none are provided", {
-    g <- greenclust(matrix(1:12, ncol=2))
-    expect_equal(g$labels, as.character(1:6))
+    g <- greenclust(matrix(1:12, ncol=2), verbose=TRUE)
+    expect_identical(g$labels, as.character(1:6))
 })
 
 test_that("greenclust returns a valid greenclust/hclust object", {

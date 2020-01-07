@@ -6,7 +6,8 @@
 #                                                                             #
 #  Jeff Jetton                                                                #
 #  March 2019 - Initial coding                                                #
-#  September 2019 - version 1.1: Improved clustering implementation           #
+#  January 2020 - version 1.1: Improved clustering implementation             #
+#                              and a few bugfixes                             #
 #                                                                             #
 ###############################################################################
 
@@ -302,7 +303,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     grc <- structure(list(merge=unname(merge.matrix),
                           height=heights,
                           order=vector(),
-                          labels=rownames(x[1:n, ]),
+                          labels=rownames(original.x),
                           call=match.call(),
                           dist.method="chi-squared",
                           p.values=unname(p.values),

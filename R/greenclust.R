@@ -219,8 +219,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
         new.row.chi <- .calculate.row.chi(new.row, column.totals, table.total)
         row.chis[new.row.index] <- new.row.chi
 
-        # Reduce the running overall chi by the winning reduction amount
-        running.chi <- running.chi - lowest.reduction
+
 
         # Reduce degrees of freedom
         df <- df - (ncol(x) - 1)
@@ -252,6 +251,20 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
                                 make.row.names=FALSE)
         }
 
+        # Adjust the running chi-sq statistic and figure out its p-value
+        if (correct && length(active.rows)==2 && ncol(x)==2) {
+            # Use Yates's correction (only applies to a 2x2 matrix)
+            temp.x <- x[active.rows, ]
+            suppressWarnings(chi.result <- chisq.test(temp.x, correct=TRUE))
+            running.chi <- chi.result$statistic
+            current.p <- chi.result$p.value
+        } else {
+            # Just reduce the overall chi by the winning reduction amount
+            # No need to calculate chi "from scratch"
+            running.chi <- running.chi - lowest.reduction
+            current.p <- pchisq(running.chi, df, lower.tail=FALSE)
+        }
+
         # Merge matrix: Add info on winning clustering. Use the indices
         merge.matrix <- rbind(merge.matrix, merge.indices[rows.to.combine])
         # Update merge.indices to reflect the fact that the new row is
@@ -260,7 +273,7 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
 
         # Add info to the other cluster-step-tracking variables
         heights <- c(heights, (initial.chi - running.chi)/initial.chi)
-        p.values <- c(p.values, pchisq(running.chi, df, lower.tail=FALSE))
+        p.values <- c(p.values, current.p)
         tie <- c(tie, tie.flag)
 
         # Print details (if we're in verbose mode)
@@ -279,9 +292,6 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     #   Prepare Return Object      #
     ################################
 
-    # Get rid of the merge matrix row names added by rbind
-    row.names(merge.matrix) <- NULL
-
     # Final height should always be 1 (for plotting)
     heights[length(heights)] <- 1
 
@@ -289,32 +299,18 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     p.values <- p.values[-length(p.values)]
 
     # Pack everything up (except the order vector)
-    grc <- structure(list(merge=merge.matrix,
+    grc <- structure(list(merge=unname(merge.matrix),
                           height=heights,
                           order=vector(),
                           labels=rownames(x[1:n, ]),
                           call=match.call(),
                           dist.method="chi-squared",
-                          p.values=p.values,
+                          p.values=unname(p.values),
                           tie=tie),
                      class=c("hclust", "greenclust"))
 
     # Use R's built-in dendrogram object to help create the order vector
     grc$order <- order.dendrogram(as.dendrogram(grc))
-
-    # If we want to maintain R's default use of Yate's continuity correction
-    # on a 2x2 table (although I can't imagine why), recalculate the second-
-    # to-last cluster's chi & p. A bit of a hack to do this at the end, but
-    # it usually saves a few cycles compared to checking at every clustering
-    # step to set it this way in the first place, especially considering this
-    # will rarely ever be done.
-    if (correct & ncol(x) == 2) {
-        clusters <- cutree(grc, k=2)
-        clustered.table <- aggregate(original.x, by=list(clusters), FUN=sum)[,-1]
-        suppressWarnings(chi <- chisq.test(clustered.table, correct=TRUE))
-        grc$height[n-2] <- (1 - chi$statistic/initial.chi)
-        grc$p.values[n-2] <- chi$p.value
-    }
 
     # That's it!
     return(grc)

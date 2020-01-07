@@ -44,6 +44,11 @@ test_that("greenclust stops when x has negative row or column sums", {
                  "all column totals must be greater than zero")
 })
 
+test_that("greenclust stops when x has an initial chi-squared of zero", {
+    expect_error(greenclust(matrix(rep(1, 8), ncol=2)),
+                 "x already has a chi-squared statistic of zero and cannot be clustered")
+})
+
 test_that("greenclust creates rownames when none are provided", {
     g <- greenclust(matrix(1:12, ncol=2), verbose=TRUE)
     expect_identical(g$labels, as.character(1:6))

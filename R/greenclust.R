@@ -84,6 +84,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     if(sum(apply(x, 2, sum)==0) > 0)
         stop("all column totals must be greater than zero")
 
+    # Make sure chi-squared is not already zero
+    suppressWarnings(chi.result <- chisq.test(x, correct=correct))
+    if(chi.result$statistic == 0)
+        stop("x already has a chi-squared statistic of zero and cannot be clustered")
+
     # If there are no row names, give them names
     if (is.null(rownames(x))) {
         rownames(x) <- 1:nrow(x)

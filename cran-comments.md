@@ -19,7 +19,9 @@ This package has been recently tested under:
 * r-hub: Fedora Linux, x86_64-pc-linux-gnu (64-bit), R Under development (unstable) (2020-01-03 r77629)
 
 
-## Local R CMD check results
+## R CMD check results
+
+#### Local results:
 
 0 ERRORs, 0 WARNINGs, 0 NOTEs
 
@@ -31,25 +33,26 @@ R CMD check succeeded
 All online checkers returned 0 ERRORS and 0 WARNINGS
 
 All release platforms and R-hub Windows Server Dev returned 0 NOTES
-
-There was 1 NOTE from the R-hub Fedora Linux test:
-    
+  
 --------
-    
+  
+There was 1 NOTE from the R-hub Fedora Linux test:
+  
+```
 > Possibly mis-spelled words in DESCRIPTION:
 >  Greenacre (9:18)
 >  Greenacre's (3:33)
 >  iteratively (6:37)
-
---------
+```
     
 These words are spelled correctly
-
-
-There was 1 NOTE from the Win-builder Windows Dev test:
     
 --------
 
+  
+There was 1 NOTE from the Win-builder Windows Dev test:
+  
+```
 > Found the following (possibly) invalid URLs:
 >   URL: https://doi.org/10.1007/BF01901670
 >     From: man/greenclust.Rd
@@ -59,8 +62,7 @@ There was 1 NOTE from the Win-builder Windows Dev test:
 >     Status: Error
 >     Message: libcurl error code 35:
 >       	error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version
-
---------
+```
 
 This URL is working and valid
 

@@ -4,10 +4,19 @@
 \alias{greenplot}
 \title{Plot Statistics for a Greenclust Object}
 \usage{
-greenplot(g, type = "b", bg = "gray75", pch = 21, cex = 1,
-  optim.col = "red", pos = 2,
-  main = "P-Value vs. R-Squared for Num. Clusters", xlab = "r-squared",
-  ylab = NULL, ...)
+greenplot(
+  g,
+  type = "b",
+  bg = "gray75",
+  pch = 21,
+  cex = 1,
+  optim.col = "red",
+  pos = 2,
+  main = "P-Value vs. R-Squared for Num. Clusters",
+  xlab = "r-squared",
+  ylab = NULL,
+  ...
+)
 }
 \arguments{
 \item{g}{an object of the type produced by \code{\link{greenclust}}}

@@ -16,7 +16,7 @@ Encoding: UTF-8
 URL: https://github.com/JeffJetton/greenclust
 BugReports: https://github.com/JeffJetton/greenclust/issues
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: 
     testthat,
     knitr,

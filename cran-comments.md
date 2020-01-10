@@ -11,7 +11,7 @@ The following issue has been FIXED since the previous submission attempt in Octo
 
 This package has been recently tested under:
 
-* Mac OS X 10.12.6 local install: R 3.6.0
+* Mac OS X 10.12.6 local install: R 3.6.2
 * win-builder: Windows Release, x86_64-w64-mingw32 (64-bit), R version 3.6.2 (2019-12-12)
 * win-builder: Windows Dev, x86_64-w64-mingw32 (64-bit), R Under development (unstable) (2020-01-03 r77630)
 * r-hub: Windows Server 2008 R2 SP1, R-devel, 32/64 bit

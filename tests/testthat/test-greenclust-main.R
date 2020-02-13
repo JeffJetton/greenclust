@@ -113,3 +113,10 @@ test_that("greenclust correctly handles Yates's correction", {
     suppressWarnings(p <- chisq.test(m3, correct=TRUE)$p.value)
     expect_equal(log(g$p.values[length(g$p.values)]), log(p))
 })
+
+
+test_that("greenclust handles an integer matrix without overflow", {
+    elements <- c(0, 5000, 25000, 10000, 25000, 100000, 35000, 7500)
+    m4 <- matrix(as.integer(elements), ncol=2)
+    expect_silent(greenclust(m4))
+})

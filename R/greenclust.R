@@ -84,6 +84,11 @@ greenclust <- function(x, correct=FALSE, verbose=FALSE) {
     if(sum(apply(x, 2, sum)==0) > 0)
         stop("all column totals must be greater than zero")
 
+    # If elements in x are integer, convert to higher-precision double
+    if (is.integer(x)) {
+        storage.mode(x) <- "double"
+    }
+
     # Make sure chi-squared is not already zero
     suppressWarnings(chi.result <- chisq.test(x, correct=correct))
     if(chi.result$statistic == 0)

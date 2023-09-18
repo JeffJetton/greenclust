@@ -45,7 +45,7 @@ test_that("greenclust stops when x has negative row or column sums", {
 })
 
 test_that("greenclust stops when x has an initial chi-squared of zero", {
-    skip_if_not_installed("greenclust", minimum_version=1.1)
+    skip_if_not_installed("greenclust", minimum_version="1.1")
     expect_error(greenclust(matrix(rep(1, 8), ncol=2)),
                  "x already has a chi-squared statistic of zero and cannot be clustered")
 })

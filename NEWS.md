@@ -1,3 +1,9 @@
+# greenclust 1.1.1
+
+* Fixes error when running testthat tests on some platforms, due to an incorrect version argument type
+* Internally converts integer matrices to doubles to avoid potential overflow
+  
+
 # greenclust 1.1
 
 * The core clustering code has been completely re-written and is now far more efficient.

@@ -3,8 +3,11 @@
 
 # greenclust
 
-![Count of CRAN
-downloads](https://cranlogs.r-pkg.org/badges/grand-total/greenclust)
+<figure>
+<img src="https://cranlogs.r-pkg.org/badges/grand-total/greenclust"
+alt="Count of CRAN downloads" />
+<figcaption aria-hidden="true">Count of CRAN downloads</figcaption>
+</figure>
 
 ## Overview
 
@@ -219,13 +222,13 @@ print(table(chickwts$feed, chickwts$cluster))
 ##   sunflower 12  0  0
 ```
 
------
+------------------------------------------------------------------------
 
 ## Additional Resources
 
-  - Michael J. Greenacre: [Clustering the Rows and Columns of a
-    Contingency Table](https://doi.org/10.1007/BF01901670)
-  - Xinghe Lu: [Correcting the Quasi-complete Separation Issue in
-    Logistic Regression
-    Models](https://pdfs.semanticscholar.org/bbb0/2b26cf6a1628b27ddef70a83b92962d6dce2.pdf)
-    (pdf)
+- Michael J. Greenacre: [Clustering the Rows and Columns of a
+  Contingency Table](https://doi.org/10.1007/BF01901670)
+- Xinghe Lu: [Correcting the Quasi-complete Separation Issue in Logistic
+  Regression
+  Models](https://support.sas.com/resources/papers/proceedings16/10220-2016.pdf)
+  (pdf)
